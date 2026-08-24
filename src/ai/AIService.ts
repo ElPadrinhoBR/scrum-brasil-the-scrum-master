@@ -2,29 +2,48 @@
 
 import { AIConfig, AIProvider, AISituation } from './AIConfig';
 
+// ── Difficulty levels by sprint ───────────────────────────────────────────────
+const getDifficultyContext = (sprint: number): string => {
+  if (sprint <= 2) return `NÍVEL: Iniciante (Sprint ${sprint}). Use situações básicas: comunicação, planejamento simples, conflitos de prioridade leves. Evite situações técnicas complexas.`;
+  if (sprint <= 5) return `NÍVEL: Intermediário (Sprint ${sprint}). Situações de média complexidade: dívida técnica, stakeholders difíceis, estimativas erradas, conflitos interpessoais.`;
+  if (sprint <= 9) return `NÍVEL: Avançado (Sprint ${sprint}). Situações complexas: burnout crítico, pressão organizacional intensa, falhas em produção, reestruturação de time, decisões arquiteturais.`;
+  return `NÍVEL: Expert (Sprint ${sprint}). Situações extremas e multifacetadas: crise organizacional, múltiplos conflitos simultâneos, deadlines impossíveis, problemas de governança e cultura.`;
+};
+
 // ── System Prompt ──────────────────────────────────────────────────────────────
-// Kept deliberately concise to reduce token usage and avoid truncation.
-const buildPrompt = (sprint: number, playerName: string, previousTitles: string[]): string => {
-  const avoidList = previousTitles.length > 0
-    ? `\nNão repita: ${previousTitles.slice(-5).join(', ')}.`
+const buildPrompt = (
+  sprint: number,
+  playerName: string,
+  previousTitles: string[],
+  usedCategories: string[],
+): string => {
+  const avoidTitles = previousTitles.length > 0
+    ? `\nTítulos já usados (NÃO repita): ${previousTitles.slice(-8).join(' | ')}.`
     : '';
+
+  const avoidCats = usedCategories.length > 0
+    ? `\nCategorias recentes (prefira outra): ${usedCategories.slice(-4).join(', ')}.`
+    : '';
+
+  const difficulty = getDifficultyContext(sprint);
 
   return `Você é um simulador de situações adversas de desenvolvimento de software para treinar Scrum Masters.
 
-Gere UMA situação entre membros do time. Sprint: ${sprint}. SM: ${playerName}.
-Time: Ana Lima (PO), Carlos Souza (Backend), Júlia Santos (Frontend), Marcos Oliveira (QA), Beatriz Costa (UX), Rafael Mendes (DevOps). Produto: Pixflow (pagamentos Pix).${avoidList}
+Gere UMA situação única entre membros do time. SM: ${playerName}. Produto: Pixflow (pagamentos Pix).
+Time: Ana Lima (PO), Carlos Souza (Backend), Júlia Santos (Frontend), Marcos Oliveira (QA), Beatriz Costa (UX), Rafael Mendes (DevOps).
+${difficulty}${avoidTitles}${avoidCats}
 
-Categorias possíveis (escolha uma aleatoriamente):
-conflito dev×PO, bug em produção, dev querendo sair, mudança de escopo na sprint, burnout, dívida técnica crítica, conflito interpessoal, PO ausente, estimativas erradas, pressão da diretoria, deploy que quebrou produção, dependência de time externo, qualidade×velocidade, onboarding falho, daily virou reunião técnica, cliente pedindo demo cedo, conflito de responsabilidade, férias sem passagem de contexto.
+Categorias possíveis (escolha uma diferente das recentes):
+conflito_dev_po, bug_producao, dev_querendo_sair, mudanca_escopo, burnout, divida_tecnica, conflito_interpessoal, po_ausente, estimativas_erradas, pressao_diretoria, deploy_quebrado, dependencia_externa, qualidade_vs_velocidade, onboarding_falho, daily_tecnical, demo_antecipada, conflito_responsabilidade, ferias_sem_contexto.
 
 REGRAS CRÍTICAS:
 - Responda SOMENTE com JSON válido e completo. Zero texto antes ou depois.
-- Mantenha TODOS os textos curtos: titulo ≤50 chars, situacao ≤200 chars, cada texto/explicacao ≤120 chars.
-- Não use aspas simples dentro de strings. Use apenas aspas duplas.
-- Não use caracteres especiais que quebrem JSON.
+- Textos curtos: titulo ≤50 chars, situacao ≤180 chars, cada texto/explicacao ≤110 chars.
+- Use apenas aspas duplas. Sem caracteres especiais que quebrem JSON.
+- Inclua termos técnicos reais no campo situacao (ex: Sprint, Daily Scrum, Burndown, WIP, TDD, CI/CD, Dívida Técnica etc).
 
-JSON (preencha todos os campos):
-{"titulo":"...","speaker":"nome do personagem","expressao":"neutral|happy|worried|angry|sad|surprised|confident","background":"escritorio|reuniao|desenvolvimento|cafeteria|servidores|diretoria","situacao":"fala do personagem em 1a pessoa","escolhas":[{"texto":"ação do SM","avaliacao":"BOM","explicacao":"por que é boa prática"},{"texto":"ação do SM","avaliacao":"MEDIANO","explicacao":"por que é mediana"},{"texto":"ação do SM","avaliacao":"RUIM","explicacao":"por que é ruim"}]}`;
+JSON:
+{"titulo":"...","categoria":"nome_da_categoria","speaker":"nome do personagem","expressao":"neutral|happy|worried|angry|sad|surprised|confident","background":"escritorio|reuniao|desenvolvimento|cafeteria|servidores|diretoria","situacao":"fala do personagem em 1a pessoa com termos técnicos","escolhas":[{"texto":"ação do SM","avaliacao":"BOM","explicacao":"por que é boa prática ágil"},{"texto":"ação do SM","avaliacao":"MEDIANO","explicacao":"por que é mediana"},{"texto":"ação do SM","avaliacao":"RUIM","explicacao":"por que é ruim"}]}`;
 };
 
 // ── Robust JSON repair ────────────────────────────────────────────────────────
@@ -184,8 +203,9 @@ export async function generateSituation(
   sprint: number,
   playerName: string,
   previousTitles: string[] = [],
+  usedCategories: string[] = [],
 ): Promise<AISituation> {
-  const prompt = buildPrompt(sprint, playerName, previousTitles);
+  const prompt = buildPrompt(sprint, playerName, previousTitles, usedCategories);
   const maxAttempts = 3;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {

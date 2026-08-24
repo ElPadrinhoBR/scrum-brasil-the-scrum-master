@@ -16,6 +16,7 @@ export interface AIConfig {
 
 export interface AISituation {
   titulo: string;
+  categoria?: string;
   speaker: string;
   expressao: 'neutral' | 'happy' | 'worried' | 'angry' | 'sad' | 'surprised' | 'confident';
   background: 'escritorio' | 'reuniao' | 'desenvolvimento' | 'cafeteria' | 'servidores' | 'diretoria';
