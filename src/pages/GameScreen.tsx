@@ -39,7 +39,7 @@ export const GameScreen: React.FC = () => {
       return (
         <div className="absolute inset-0 bg-[#0c0c14]">
           <img 
-            src={`/backgrounds/${scene}.png`} 
+            src={`${import.meta.env.BASE_URL}backgrounds/${scene}.png`} 
             alt={scene} 
             className="w-full h-full object-cover"
             onError={() => {

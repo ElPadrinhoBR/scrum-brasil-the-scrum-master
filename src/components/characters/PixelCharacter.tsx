@@ -98,7 +98,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
     >
       {imgState === 'expression' && (
         <img 
-          src={`/characters/${characterId}_${expression}.png`} 
+          src={`${import.meta.env.BASE_URL}characters/${characterId}_${expression}.png`} 
           alt={`${characterId} (${expression})`} 
           className="w-full h-full object-cover"
           onError={() => setImgState('base')}
@@ -107,7 +107,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
 
       {imgState === 'base' && (
         <img 
-          src={`/characters/${characterId}.png`} 
+          src={`${import.meta.env.BASE_URL}characters/${characterId}.png`} 
           alt={characterId} 
           className="w-full h-full object-cover"
           onError={() => setImgState('svg')}
