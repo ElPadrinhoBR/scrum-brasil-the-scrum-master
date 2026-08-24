@@ -10,7 +10,7 @@ interface MainMenuProps {
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
   const { startNewGame, loadSavedGame, hasSaveGame, state, muted, toggleMute } = useGame();
-  const [view, setView] = useState<'main' | 'achievements' | 'credits' | 'name_input'>('main');
+  const [view, setView] = useState<'main' | 'achievements' | 'credits' | 'name_input' | 'mode_select'>('main');
   const [nameInput, setNameInput] = useState('Roberto');
 
   const handleNewGame = () => {
@@ -21,12 +21,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
     setView('name_input');
   };
 
-  const handleStartGameWithName = () => {
+  const handleNameConfirm = () => {
     if (!nameInput.trim()) {
       alert("⚠️ Digite um nome de Scrum Master válido!");
       return;
     }
-    startNewGame(nameInput.trim());
+    setView('mode_select');
+  };
+
+  const handleStartGameWithMode = (mode: 'campaign' | 'sandbox') => {
+    startNewGame(nameInput.trim(), mode);
     onStartGame();
   };
 
@@ -107,15 +111,60 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
               maxLength={20}
               className="w-full bg-[#131326] border-4 border-retro-border p-3 text-white font-mono text-center text-sm outline-none focus:border-retro-accent rounded"
               placeholder="Digite seu nome..."
+              onKeyDown={(e) => e.key === 'Enter' && handleNameConfirm()}
             />
             <div className="flex flex-col gap-3 pt-2">
-              <RetroButton variant="success" onClick={handleStartGameWithName} className="py-2.5 uppercase w-full">
-                🕹️ Começar Jogo
+              <RetroButton variant="success" onClick={handleNameConfirm} className="py-2.5 uppercase w-full">
+                ➡️ Próximo: Escolher Modo
               </RetroButton>
               <RetroButton variant="danger" onClick={() => setView('main')} className="py-2.5 uppercase w-full">
                 Cancelar
               </RetroButton>
             </div>
+          </RetroCard>
+        )}
+
+        {view === 'mode_select' && (
+          <RetroCard title="Escolha o Modo de Jogo" className="space-y-4">
+            <p className="text-[9px] text-retro-dimmed font-pressstart text-center">
+              Olá, <span className="text-retro-accent">{nameInput}</span>! Como deseja jogar?
+            </p>
+
+            {/* Campaign Mode */}
+            <button
+              onClick={() => handleStartGameWithMode('campaign')}
+              className="w-full text-left p-4 border-2 border-retro-blue bg-[#0c1326]/70 hover:border-retro-accent hover:bg-[#0c1326] transition-all rounded group"
+            >
+              <div className="font-pressstart text-[10px] text-retro-accent mb-2 group-hover:text-white">
+                🏢 Modo Campanha
+              </div>
+              <p className="text-[9px] font-sans text-slate-300 leading-relaxed">
+                Siga a história da <strong className="text-white">Nova Tech</strong> com 8 Sprints fixas, personagens originais e uma narrativa ágil completa até o produto final.
+              </p>
+              <div className="mt-2 text-[8px] font-pressstart text-retro-green bg-green-950/40 inline-block px-2 py-0.5 border border-green-800">
+                8 Sprints · Narrativa Linear
+              </div>
+            </button>
+
+            {/* Sandbox Mode */}
+            <button
+              onClick={() => handleStartGameWithMode('sandbox')}
+              className="w-full text-left p-4 border-2 border-retro-purple bg-[#1a0c26]/70 hover:border-retro-accent hover:bg-[#1a0c26] transition-all rounded group"
+            >
+              <div className="font-pressstart text-[10px] text-retro-purple mb-2 group-hover:text-white">
+                ♾️ Sandbox Infinito
+              </div>
+              <p className="text-[9px] font-sans text-slate-300 leading-relaxed">
+                Sprints infinitas geradas <strong className="text-white">proceduralmente</strong>. User Stories, dilemas ágeis e eventos únicos a cada ciclo — sem fim definido!
+              </p>
+              <div className="mt-2 text-[8px] font-pressstart text-retro-purple bg-purple-950/40 inline-block px-2 py-0.5 border border-purple-800">
+                ♾️ Sprints Ilimitadas · Geração Procedural
+              </div>
+            </button>
+
+            <RetroButton variant="secondary" onClick={() => setView('name_input')} className="py-2 text-[9px] uppercase w-full mt-1">
+              ← Voltar
+            </RetroButton>
           </RetroCard>
         )}
 

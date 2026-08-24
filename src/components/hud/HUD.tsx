@@ -58,21 +58,47 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Sprint Goal & Title and Countdown */}
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <div className="font-pressstart text-[14px] text-retro-accent">
-              SPRINT {sprint.toString().padStart(2, '0')} / 08
-            </div>
-            <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
-              Status: <span className="text-white">{phase}</span>
-            </div>
+            {state.gameMode === 'sandbox' ? (
+              <>
+                <div className="font-pressstart text-[14px] text-retro-purple">
+                  SPRINT {sprint.toString().padStart(2, '0')} / ♾️
+                </div>
+                <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
+                  Status: <span className="text-white">{phase}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="font-pressstart text-[14px] text-retro-accent">
+                  SPRINT {sprint.toString().padStart(2, '0')} / 08
+                </div>
+                <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
+                  Status: <span className="text-white">{phase}</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="border-l-4 border-dashed border-slate-800 pl-4">
-            <div className="font-pressstart text-[9px] text-retro-red uppercase">
-              📅 PRAZO: 16 SEMANAS
-            </div>
-            <div className="text-[9px] text-white mt-1 font-pressstart uppercase">
-              FALTAM: <span className="text-retro-accent">{weeksLeft} SEMANAS {daysLeft > 0 ? `E ${daysLeft} DIAS` : ''}</span>
-            </div>
+            {state.gameMode === 'sandbox' ? (
+              <>
+                <div className="font-pressstart text-[9px] text-retro-purple uppercase">
+                  ♾️ MODO SANDBOX
+                </div>
+                <div className="text-[9px] text-white mt-1 font-pressstart uppercase">
+                  SPRINTS: <span className="text-retro-purple">ILIMITADAS</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="font-pressstart text-[9px] text-retro-red uppercase">
+                  📅 PRAZO: 16 SEMANAS
+                </div>
+                <div className="text-[9px] text-white mt-1 font-pressstart uppercase">
+                  FALTAM: <span className="text-retro-accent">{weeksLeft} SEMANAS {daysLeft > 0 ? `E ${daysLeft} DIAS` : ''}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

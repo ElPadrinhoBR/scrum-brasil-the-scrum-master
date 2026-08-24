@@ -14,6 +14,10 @@ export const GameScreen: React.FC = () => {
   
   // Choose dialog array based on active phase
   const getActiveDialogues = () => {
+    // In sandbox mode, dialogues are always stored in state.sandboxDialogues
+    if (state.gameMode === 'sandbox') {
+      return state.sandboxDialogues as typeof currentSprintDef.planningDialogues;
+    }
     if (phase === 'INTRO' || phase === 'PLANNING') {
       return currentSprintDef.planningDialogues;
     } else if (phase === 'DEVELOPMENT') {

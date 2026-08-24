@@ -54,6 +54,14 @@ export interface GameState {
   currentEventId: string | null;
   retroImprovement: string | null; // Selected action in Retro
   playerName: string;
+  gameMode: 'campaign' | 'sandbox';
+  sandboxDialogues: Array<{ 
+    speaker: string; 
+    text: string; 
+    expression?: 'neutral' | 'happy' | 'worried' | 'angry' | 'sad' | 'surprised' | 'confident';
+    background?: 'escritorio' | 'reuniao' | 'desenvolvimento' | 'cafeteria' | 'servidores' | 'diretoria';
+    choices?: any[];
+  }>;
 }
 
 export const INITIAL_STATS: GameStats = {

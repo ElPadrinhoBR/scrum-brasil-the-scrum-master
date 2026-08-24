@@ -60,6 +60,8 @@ export const SaveSystem = {
       currentEventId: null,
       retroImprovement: null,
       playerName: 'Roberto',
+      gameMode: 'campaign',
+      sandboxDialogues: [],
     };
   }
 };

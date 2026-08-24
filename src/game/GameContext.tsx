@@ -5,6 +5,7 @@ import { SPRINTS_DATA, DialogueChoice, DialogueLine } from '../data/sprints';
 import { CHARACTERS_DATA } from '../data/characters';
 import { ACHIEVEMENTS_DATA } from '../data/achievements';
 import { SoundManager } from '../components/ui/SoundManager';
+import { SandboxGenerator } from './SandboxGenerator';
 
 interface GameContextType {
   state: GameState;
@@ -12,7 +13,7 @@ interface GameContextType {
   setActiveTab: (tab: 'game' | 'team' | 'board') => void;
   muted: boolean;
   toggleMute: () => void;
-  startNewGame: (playerName?: string) => void;
+  startNewGame: (playerName?: string, gameMode?: 'campaign' | 'sandbox') => void;
   loadSavedGame: () => boolean;
   advanceDialogueLine: () => void;
   selectDialogueChoice: (choice: DialogueChoice) => void;
@@ -52,18 +53,29 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasSaveGame(true);
   };
 
-  const startNewGame = (playerName?: string) => {
+  const startNewGame = (playerName?: string, gameMode?: 'campaign' | 'sandbox') => {
     const freshState = SaveSystem.createInitialState();
     if (playerName) {
       freshState.playerName = playerName;
     }
-    
-    // Load Sprint 1 stories and planning dialogs
-    const firstSprint = SPRINTS_DATA[0];
-    freshState.backlog = JSON.parse(JSON.stringify(firstSprint.stories));
-    freshState.currentSprintGoal = firstSprint.goal;
-    freshState.phase = 'INTRO';
-    freshState.dialogueIndex = 0;
+    freshState.gameMode = gameMode || 'campaign';
+
+    if (freshState.gameMode === 'sandbox') {
+      const initialGoal = "Estruturar o MVP do Pixflow (Sandbox)";
+      freshState.backlog = SandboxGenerator.generateStories(1);
+      freshState.currentSprintGoal = initialGoal;
+      freshState.phase = 'PLANNING';
+      freshState.dialogueIndex = 0;
+      freshState.sandboxDialogues = SandboxGenerator.generatePlanningDialogue(1, initialGoal);
+    } else {
+      // Load Sprint 1 stories and planning dialogs
+      const firstSprint = SPRINTS_DATA[0];
+      freshState.backlog = JSON.parse(JSON.stringify(firstSprint.stories));
+      freshState.currentSprintGoal = firstSprint.goal;
+      freshState.phase = 'INTRO';
+      freshState.dialogueIndex = 0;
+      freshState.sandboxDialogues = [];
+    }
     
     setState(freshState);
     SaveSystem.save(freshState);
@@ -150,19 +162,23 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const sprintDef = getCurrentSprintDef();
     let currentDialogues: DialogueLine[] = [];
 
-    if (state.phase === 'INTRO') {
-      // Intro sequence
-      currentDialogues = sprintDef.planningDialogues;
-    } else if (state.phase === 'PLANNING') {
-      currentDialogues = sprintDef.planningDialogues;
-    } else if (state.phase === 'DEVELOPMENT') {
-      // Daily dialogue
-      const dayDialogues = sprintDef.dailyEvents[state.day];
-      if (dayDialogues) {
-        currentDialogues = dayDialogues;
+    if (state.gameMode === 'sandbox') {
+      currentDialogues = state.sandboxDialogues as DialogueLine[];
+    } else {
+      if (state.phase === 'INTRO') {
+        // Intro sequence
+        currentDialogues = sprintDef.planningDialogues;
+      } else if (state.phase === 'PLANNING') {
+        currentDialogues = sprintDef.planningDialogues;
+      } else if (state.phase === 'DEVELOPMENT') {
+        // Daily dialogue
+        const dayDialogues = sprintDef.dailyEvents[state.day];
+        if (dayDialogues) {
+          currentDialogues = dayDialogues;
+        }
+      } else if (state.phase === 'REVIEW') {
+        currentDialogues = sprintDef.reviewDialogues;
       }
-    } else if (state.phase === 'REVIEW') {
-      currentDialogues = sprintDef.reviewDialogues;
     }
 
     const nextIndex = state.dialogueIndex + 1;
@@ -314,11 +330,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const sprintDef = getCurrentSprintDef();
     let currentDialogues: DialogueLine[] = [];
 
-    if (state.phase === 'INTRO' || state.phase === 'PLANNING') {
-      currentDialogues = sprintDef.planningDialogues;
-    } else if (state.phase === 'DEVELOPMENT') {
-      const dayDialogues = sprintDef.dailyEvents[state.day];
-      if (dayDialogues) currentDialogues = dayDialogues;
+    if (state.gameMode === 'sandbox') {
+      currentDialogues = state.sandboxDialogues as DialogueLine[];
+    } else {
+      if (state.phase === 'INTRO' || state.phase === 'PLANNING') {
+        currentDialogues = sprintDef.planningDialogues;
+      } else if (state.phase === 'DEVELOPMENT') {
+        const dayDialogues = sprintDef.dailyEvents[state.day];
+        if (dayDialogues) currentDialogues = dayDialogues;
+      }
     }
 
     const nextIndex = choice.nextDialogueIndex !== undefined ? choice.nextDialogueIndex : state.dialogueIndex + 1;
@@ -369,17 +389,28 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const startDevelopmentPhase = () => {
-    const sprintDef = getCurrentSprintDef();
-    const morningDialogues = sprintDef.dailyEvents[1] || [];
+    let morningDialogues: Array<{ speaker: string; text: string }> = [];
+    let nextSandboxDialogues = state.sandboxDialogues;
+
+    if (state.gameMode === 'sandbox') {
+      const dailyLines = SandboxGenerator.generateDailyEvent(state.sprint, 1);
+      nextSandboxDialogues = dailyLines;
+      morningDialogues = [{ speaker: dailyLines[0].speaker, text: dailyLines[0].text }];
+    } else {
+      const sprintDef = getCurrentSprintDef();
+      const lines = sprintDef.dailyEvents[1] || [];
+      morningDialogues = lines.length > 0
+        ? [{ speaker: lines[0].speaker, text: lines[0].text }]
+        : [];
+    }
     
     saveState({
       ...state,
       phase: 'DEVELOPMENT',
       day: 1,
       dialogueIndex: 0,
-      dialogueHistory: morningDialogues.length > 0 
-        ? [{ speaker: morningDialogues[0].speaker, text: morningDialogues[0].text }] 
-        : [],
+      dialogueHistory: morningDialogues,
+      sandboxDialogues: nextSandboxDialogues,
       flags: { ...state.flags, sprintPlanningCompleted: true }
     });
     setActiveTab('game');
@@ -464,20 +495,35 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let nextPhase: GameState['phase'] = state.phase;
     let nextDialogueHistory: Array<{ speaker: string; text: string }> = [];
     let nextDialogueIndex = 0;
+    let nextSandboxDialogues = [...state.sandboxDialogues];
 
     const sprintDef = getCurrentSprintDef();
 
     if (nextDay > 3) {
       // 3 days of development are completed. Move to Sprint Review!
       nextPhase = 'REVIEW';
-      const firstReviewLine = sprintDef.reviewDialogues[0];
-      nextDialogueHistory = [{ speaker: firstReviewLine.speaker, text: firstReviewLine.text }];
+      if (state.gameMode === 'sandbox') {
+        const completedStories = updatedBacklog.filter(s => s.status === 'done').length;
+        const totalStories = updatedBacklog.length;
+        const reviewDialogs = SandboxGenerator.generateReviewDialogue(state.sprint, completedStories, totalStories);
+        nextSandboxDialogues = reviewDialogs;
+        nextDialogueHistory = [{ speaker: reviewDialogs[0].speaker, text: reviewDialogs[0].text }];
+      } else {
+        const firstReviewLine = sprintDef.reviewDialogues[0];
+        nextDialogueHistory = [{ speaker: firstReviewLine.speaker, text: firstReviewLine.text }];
+      }
       setActiveTab('game');
     } else {
       // Next day starts: trigger morning daily scrum event dialogue
-      const morningDialogues = sprintDef.dailyEvents[nextDay];
-      if (morningDialogues && morningDialogues.length > 0) {
-        nextDialogueHistory = [{ speaker: morningDialogues[0].speaker, text: morningDialogues[0].text }];
+      if (state.gameMode === 'sandbox') {
+        const dailyDialogs = SandboxGenerator.generateDailyEvent(state.sprint, nextDay);
+        nextSandboxDialogues = dailyDialogs;
+        nextDialogueHistory = [{ speaker: dailyDialogs[0].speaker, text: dailyDialogs[0].text }];
+      } else {
+        const morningDialogues = sprintDef.dailyEvents[nextDay];
+        if (morningDialogues && morningDialogues.length > 0) {
+          nextDialogueHistory = [{ speaker: morningDialogues[0].speaker, text: morningDialogues[0].text }];
+        }
       }
       setActiveTab('game');
     }
@@ -490,6 +536,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       phase: nextPhase,
       dialogueIndex: nextDialogueIndex,
       dialogueHistory: nextDialogueHistory,
+      sandboxDialogues: nextSandboxDialogues,
     });
 
     SoundManager.playClick();
@@ -555,13 +602,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let nextPhase: GameState['phase'] = 'PLANNING';
     let nextStories: UserStory[] = [];
     let nextGoal = '';
-    let nextDialogs: DialogueLine[] = [];
+    let nextDialogs: Array<{ speaker: string; text: string }> = [];
+    let nextSandboxDialogues = state.sandboxDialogues;
 
-    if (nextSprint > 8) {
-      // Game over! Move to Results
+    if (state.gameMode === 'sandbox') {
+      // Sandbox: generate infinite next sprint procedurally — no end
+      nextGoal = `Sprint ${nextSprint} — Evoluindo o Pixflow (Sandbox)`;
+      nextStories = SandboxGenerator.generateStories(nextSprint);
+      const planningLines = SandboxGenerator.generatePlanningDialogue(nextSprint, nextGoal);
+      nextSandboxDialogues = planningLines;
+      nextDialogs = [{ speaker: planningLines[0].speaker, text: planningLines[0].text }];
+    } else if (nextSprint > 8) {
+      // Campaign: game over after 8 sprints
       nextPhase = 'RESULTS';
     } else {
-      // Set up next sprint
+      // Campaign: load next fixed sprint
       const nextSprintDef = SPRINTS_DATA[nextSprint - 1];
       nextStories = JSON.parse(JSON.stringify(nextSprintDef.stories));
       nextGoal = nextSprintDef.goal;
@@ -570,7 +625,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     nextState = {
       ...state,
-      sprint: nextSprint > 8 ? 8 : nextSprint,
+      sprint: nextSprint > 8 && state.gameMode !== 'sandbox' ? 8 : nextSprint,
       day: 1,
       phase: nextPhase,
       backlog: nextStories,
@@ -581,6 +636,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       retroImprovement: name,
       dialogueIndex: 0,
       dialogueHistory: nextDialogs,
+      sandboxDialogues: nextSandboxDialogues,
+      flags: {},  // reset per-sprint flags
     };
 
     nextState = checkLevelUp(nextState);
