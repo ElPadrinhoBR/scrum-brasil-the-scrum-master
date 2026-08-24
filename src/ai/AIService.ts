@@ -3,69 +3,105 @@
 import { AIConfig, AIProvider, AISituation } from './AIConfig';
 
 // ── System Prompt ──────────────────────────────────────────────────────────────
+// Kept deliberately concise to reduce token usage and avoid truncation.
 const buildPrompt = (sprint: number, playerName: string, previousTitles: string[]): string => {
   const avoidList = previousTitles.length > 0
-    ? `\n\nEvite repetir estas situações já geradas: ${previousTitles.join(', ')}.`
+    ? `\nNão repita: ${previousTitles.slice(-5).join(', ')}.`
     : '';
 
-  return `Você é um simulador de situações reais e adversas de desenvolvimento de software para treinar Scrum Masters brasileiros.
+  return `Você é um simulador de situações adversas de desenvolvimento de software para treinar Scrum Masters.
 
-Gere UMA situação nova, realista e desafiadora que acontece entre os membros de um time de desenvolvimento de software.
+Gere UMA situação entre membros do time. Sprint: ${sprint}. SM: ${playerName}.
+Time: Ana Lima (PO), Carlos Souza (Backend), Júlia Santos (Frontend), Marcos Oliveira (QA), Beatriz Costa (UX), Rafael Mendes (DevOps). Produto: Pixflow (pagamentos Pix).${avoidList}
 
-CONTEXTO:
-- Sprint atual: ${sprint}
-- Nome do Scrum Master: ${playerName}
-- Time: Ana Lima (Product Owner — exigente), Carlos Souza (Dev Backend — perfeccionista), Júlia Santos (Dev Frontend — criativa), Marcos Oliveira (QA — metódico), Beatriz Costa (UX Designer), Rafael Mendes (DevOps — pragmático)
-- Produto: Pixflow, uma plataforma de pagamentos via Pix para microempresas${avoidList}
+Categorias possíveis (escolha uma aleatoriamente):
+conflito dev×PO, bug em produção, dev querendo sair, mudança de escopo na sprint, burnout, dívida técnica crítica, conflito interpessoal, PO ausente, estimativas erradas, pressão da diretoria, deploy que quebrou produção, dependência de time externo, qualidade×velocidade, onboarding falho, daily virou reunião técnica, cliente pedindo demo cedo, conflito de responsabilidade, férias sem passagem de contexto.
 
-CATEGORIAS DE SITUAÇÕES (escolha uma aleatoriamente e varie a cada chamada):
-1. Conflito direto entre Dev e PO sobre prioridades de backlog
-2. Bug crítico em produção descoberto durante a Sprint
-3. Desenvolvedor ameaçando sair da empresa por sobrecarga
-4. Stakeholder pedindo mudança drástica de escopo no meio da Sprint
-5. Burnout grave de um membro da equipe
-6. Dívida técnica atingindo ponto crítico e travando entregas
-7. Conflito interpessoal sério entre dois membros do time
-8. PO tomando decisões sem consultar o time
-9. Estimativas completamente erradas causando atraso
-10. Pressão da diretoria por funcionalidade específica não planejada
-11. Deploy quebrou produção na sexta à tarde
-12. Dependência de time externo atrasando a Sprint
-13. Discussão sobre qualidade vs velocidade de entrega
-14. Novo integrante sem onboarding causando problemas
-15. Reunião de Daily virou discussão técnica prolongada
-16. Cliente pedindo demonstração antes do produto estar pronto
-17. Conflito sobre quem é responsável por uma área de código
-18. Membro da equipe indo de férias sem passar o contexto
+REGRAS CRÍTICAS:
+- Responda SOMENTE com JSON válido e completo. Zero texto antes ou depois.
+- Mantenha TODOS os textos curtos: titulo ≤50 chars, situacao ≤200 chars, cada texto/explicacao ≤120 chars.
+- Não use aspas simples dentro de strings. Use apenas aspas duplas.
+- Não use caracteres especiais que quebrem JSON.
 
-Responda APENAS com um JSON válido, sem texto adicional, sem markdown, sem blocos de código. Formato exato:
-{
-  "titulo": "título curto e impactante (máximo 60 caracteres)",
-  "speaker": "nome exato de um dos personagens (Ana Lima, Carlos Souza, Júlia Santos, Marcos Oliveira, Beatriz Costa ou Rafael Mendes)",
-  "expressao": "uma de: neutral, happy, worried, angry, sad, surprised, confident",
-  "background": "um de: escritorio, reuniao, desenvolvimento, cafeteria, servidores, diretoria",
-  "situacao": "falas do personagem descrevendo a situação em 2-3 frases vívidas, em primeira pessoa, tom emocional",
-  "escolhas": [
-    {
-      "texto": "ação concreta que o Scrum Master pode tomar (começar com verbo)",
-      "avaliacao": "BOM",
-      "explicacao": "explicação pedagógica de por que essa é uma boa prática ágil (1-2 frases)"
-    },
-    {
-      "texto": "ação alternativa do Scrum Master",
-      "avaliacao": "MEDIANO",
-      "explicacao": "explicação pedagógica de por que essa é uma prática mediana"
-    },
-    {
-      "texto": "ação incorreta que um SM menos experiente tomaria",
-      "avaliacao": "RUIM",
-      "explicacao": "explicação pedagógica de por que essa é uma má prática"
-    }
-  ]
-}`;
+JSON (preencha todos os campos):
+{"titulo":"...","speaker":"nome do personagem","expressao":"neutral|happy|worried|angry|sad|surprised|confident","background":"escritorio|reuniao|desenvolvimento|cafeteria|servidores|diretoria","situacao":"fala do personagem em 1a pessoa","escolhas":[{"texto":"ação do SM","avaliacao":"BOM","explicacao":"por que é boa prática"},{"texto":"ação do SM","avaliacao":"MEDIANO","explicacao":"por que é mediana"},{"texto":"ação do SM","avaliacao":"RUIM","explicacao":"por que é ruim"}]}`;
 };
 
-// ── Provider-specific API calls ──────────────────────────────────────────────
+// ── Robust JSON repair ────────────────────────────────────────────────────────
+// Attempts to fix common truncation/formatting issues before parsing
+function repairJSON(raw: string): string {
+  let text = raw.trim();
+
+  // Strip markdown code fences
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
+  if (fenceMatch) text = fenceMatch[1].trim();
+
+  // Find the outermost { ... }
+  const start = text.indexOf('{');
+  if (start === -1) throw new Error('Nenhum JSON encontrado na resposta da IA.');
+  text = text.slice(start);
+
+  // If the JSON is truncated (no closing }), try to close it
+  const openBraces = (text.match(/\{/g) || []).length;
+  const closeBraces = (text.match(/\}/g) || []).length;
+  const missing = openBraces - closeBraces;
+
+  if (missing > 0) {
+    // Close any open string if ends mid-string
+    const lastChar = text.trimEnd().slice(-1);
+    if (lastChar !== '"' && lastChar !== '}' && lastChar !== ']') {
+      // Likely truncated inside a string value — close the string
+      text = text.trimEnd() + '"';
+    }
+    // Close open arrays
+    const openArrays = (text.match(/\[/g) || []).length;
+    const closeArrays = (text.match(/\]/g) || []).length;
+    const missingArrays = openArrays - closeArrays;
+    for (let i = 0; i < missingArrays; i++) text += ']';
+    // Close open objects
+    for (let i = 0; i < missing; i++) text += '}';
+  }
+
+  // Remove trailing commas before ] or }
+  text = text.replace(/,\s*([}\]])/g, '$1');
+
+  return text;
+}
+
+function extractJSON(raw: string): AISituation {
+  const repaired = repairJSON(raw);
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(repaired);
+  } catch (e) {
+    // Last resort: try stripping everything after the last complete }
+    const lastBrace = repaired.lastIndexOf('}');
+    if (lastBrace > 0) {
+      parsed = JSON.parse(repaired.slice(0, lastBrace + 1));
+    } else {
+      throw new Error(`JSON malformado: ${e instanceof Error ? e.message : String(e)}\n\nResposta recebida:\n${raw.slice(0, 300)}`);
+    }
+  }
+
+  // Validate and supply defaults for any missing optional fields
+  if (!parsed.titulo) parsed.titulo = 'Situação do Time';
+  if (!parsed.speaker) parsed.speaker = 'Ana Lima';
+  if (!parsed.expressao) parsed.expressao = 'neutral';
+  if (!parsed.background) parsed.background = 'escritorio';
+  if (!parsed.situacao) parsed.situacao = 'Precisamos resolver isso agora.';
+  if (!Array.isArray(parsed.escolhas) || (parsed.escolhas as unknown[]).length === 0) {
+    parsed.escolhas = [
+      { texto: 'Facilitar uma conversa estruturada', avaliacao: 'BOM', explicacao: 'Boa prática de facilitação ágil.' },
+      { texto: 'Registrar o impedimento e monitorar', avaliacao: 'MEDIANO', explicacao: 'Resolve a médio prazo.' },
+      { texto: 'Ignorar o problema temporariamente', avaliacao: 'RUIM', explicacao: 'Evita o conflito mas não resolve.' },
+    ];
+  }
+
+  return parsed as unknown as AISituation;
+}
+
+// ── Provider calls ────────────────────────────────────────────────────────────
 
 async function callGemini(config: AIConfig, prompt: string): Promise<string> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`;
@@ -74,14 +110,18 @@ async function callGemini(config: AIConfig, prompt: string): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.9, maxOutputTokens: 1024 },
+      generationConfig: {
+        temperature: 0.85,
+        maxOutputTokens: 2048,
+        responseMimeType: 'application/json',
+      },
     }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Gemini API error ${res.status}`);
+    throw new Error((err as { error?: { message?: string } })?.error?.message || `Gemini API error ${res.status}`);
   }
-  const data = await res.json();
+  const data = await res.json() as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
@@ -94,17 +134,23 @@ async function callOpenAI(config: AIConfig, prompt: string): Promise<string> {
     },
     body: JSON.stringify({
       model: config.model,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.9,
-      max_tokens: 1024,
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um gerador de situações para treinamento de Scrum Masters. Responda APENAS com JSON válido e completo, sem texto adicional.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.85,
+      max_tokens: 2048,
       response_format: { type: 'json_object' },
     }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `OpenAI API error ${res.status}`);
+    throw new Error((err as { error?: { message?: string } })?.error?.message || `OpenAI API error ${res.status}`);
   }
-  const data = await res.json();
+  const data = await res.json() as { choices?: { message?: { content?: string } }[] };
   return data.choices?.[0]?.message?.content ?? '';
 }
 
@@ -119,41 +165,20 @@ async function callClaude(config: AIConfig, prompt: string): Promise<string> {
     },
     body: JSON.stringify({
       model: config.model,
-      max_tokens: 1024,
+      max_tokens: 2048,
+      system: 'Responda APENAS com JSON válido e completo. Nenhum texto antes ou depois do JSON.',
       messages: [{ role: 'user', content: prompt }],
     }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Claude API error ${res.status}`);
+    throw new Error((err as { error?: { message?: string } })?.error?.message || `Claude API error ${res.status}. Pode haver restrição CORS.`);
   }
-  const data = await res.json();
+  const data = await res.json() as { content?: { text?: string }[] };
   return data.content?.[0]?.text ?? '';
 }
 
-// ── JSON extraction ────────────────────────────────────────────────────────────
-function extractJSON(raw: string): AISituation {
-  // Try to parse directly, or extract from markdown code block
-  let text = raw.trim();
-  const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (match) text = match[1].trim();
-
-  // Find first { and last } just in case there's extra text
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start !== -1 && end !== -1) text = text.slice(start, end + 1);
-
-  const parsed = JSON.parse(text);
-
-  // Validate required fields
-  if (!parsed.titulo || !parsed.speaker || !parsed.situacao || !Array.isArray(parsed.escolhas)) {
-    throw new Error('JSON inválido: campos obrigatórios ausentes.');
-  }
-
-  return parsed as AISituation;
-}
-
-// ── Main exported function ────────────────────────────────────────────────────
+// ── Main exported function with retry ─────────────────────────────────────────
 export async function generateSituation(
   config: AIConfig,
   sprint: number,
@@ -161,83 +186,84 @@ export async function generateSituation(
   previousTitles: string[] = [],
 ): Promise<AISituation> {
   const prompt = buildPrompt(sprint, playerName, previousTitles);
+  const maxAttempts = 3;
 
-  let rawText = '';
-
-  switch (config.provider as AIProvider) {
-    case 'gemini':
-      rawText = await callGemini(config, prompt);
-      break;
-    case 'openai':
-      rawText = await callOpenAI(config, prompt);
-      break;
-    case 'claude':
-      rawText = await callClaude(config, prompt);
-      break;
-    default:
-      throw new Error('Provider desconhecido.');
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let rawText = '';
+    try {
+      switch (config.provider as AIProvider) {
+        case 'gemini':  rawText = await callGemini(config, prompt);  break;
+        case 'openai':  rawText = await callOpenAI(config, prompt);  break;
+        case 'claude':  rawText = await callClaude(config, prompt);  break;
+        default: throw new Error('Provider desconhecido.');
+      }
+      return extractJSON(rawText);
+    } catch (e) {
+      if (attempt === maxAttempts) {
+        const msg = e instanceof Error ? e.message : String(e);
+        throw new Error(`Falha após ${maxAttempts} tentativas: ${msg}`);
+      }
+      // Wait a moment before retrying
+      await new Promise((r) => setTimeout(r, 800 * attempt));
+    }
   }
 
-  return extractJSON(rawText);
+  throw new Error('Falha inesperada ao gerar situação.');
 }
 
 // ── Quick connection test ─────────────────────────────────────────────────────
 export async function testConnection(config: AIConfig): Promise<{ ok: boolean; error?: string }> {
   try {
-    const testConfig = { ...config };
-    let rawText = '';
-    const testPrompt = 'Responda apenas com: {"ok":true}';
+    const testPrompt = 'Responda apenas com o JSON: {"ok":true}';
 
-    switch (testConfig.provider) {
+    switch (config.provider) {
       case 'gemini': {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${testConfig.model}:generateContent?key=${testConfig.apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent?key=${config.apiKey}`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: testPrompt }] }] }),
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: testPrompt }] }],
+            generationConfig: { maxOutputTokens: 20 },
+          }),
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          return { ok: false, error: err?.error?.message || `Erro ${res.status}` };
+          return { ok: false, error: (err as { error?: { message?: string } })?.error?.message || `Erro ${res.status}` };
         }
-        const data = await res.json();
-        rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-        break;
+        return { ok: true };
       }
       case 'openai': {
         const res = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${testConfig.apiKey}` },
-          body: JSON.stringify({ model: testConfig.model, messages: [{ role: 'user', content: testPrompt }], max_tokens: 10 }),
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${config.apiKey}` },
+          body: JSON.stringify({ model: config.model, messages: [{ role: 'user', content: testPrompt }], max_tokens: 10 }),
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          return { ok: false, error: err?.error?.message || `Erro ${res.status}` };
+          return { ok: false, error: (err as { error?: { message?: string } })?.error?.message || `Erro ${res.status}` };
         }
-        rawText = 'ok';
-        break;
+        return { ok: true };
       }
       case 'claude': {
         const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': testConfig.apiKey,
+            'x-api-key': config.apiKey,
             'anthropic-version': '2023-06-01',
             'anthropic-dangerous-direct-browser-access': 'true',
           },
-          body: JSON.stringify({ model: testConfig.model, max_tokens: 10, messages: [{ role: 'user', content: testPrompt }] }),
+          body: JSON.stringify({ model: config.model, max_tokens: 10, messages: [{ role: 'user', content: testPrompt }] }),
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          return { ok: false, error: err?.error?.message || `Erro ${res.status}. Claude pode bloquear chamadas diretas do browser.` };
+          return { ok: false, error: (err as { error?: { message?: string } })?.error?.message || `Erro ${res.status}. Claude pode bloquear chamadas do browser.` };
         }
-        rawText = 'ok';
-        break;
+        return { ok: true };
       }
     }
-
-    return { ok: rawText.length > 0 };
+    return { ok: false, error: 'Provider desconhecido.' };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return { ok: false, error: msg };
