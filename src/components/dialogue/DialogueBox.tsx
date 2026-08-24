@@ -31,7 +31,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
   const [pendingChoiceFeedback, setPendingChoiceFeedback] = useState<DialogueChoice | null>(null);
-  const textTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const textTimerRef = useRef<any>(null);
 
   // Format text by replacing the playerName placeholder
   const formattedText = text.replace(/{playerName}/g, playerName);
