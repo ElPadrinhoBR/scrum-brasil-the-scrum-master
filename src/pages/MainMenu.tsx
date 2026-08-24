@@ -10,14 +10,23 @@ interface MainMenuProps {
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
   const { startNewGame, loadSavedGame, hasSaveGame, state, muted, toggleMute } = useGame();
-  const [view, setView] = useState<'main' | 'achievements' | 'credits'>('main');
+  const [view, setView] = useState<'main' | 'achievements' | 'credits' | 'name_input'>('main');
+  const [nameInput, setNameInput] = useState('Roberto');
 
   const handleNewGame = () => {
     if (hasSaveGame) {
       const confirm = window.confirm("⚠️ Iniciar um novo jogo apagará seu save atual. Deseja continuar?");
       if (!confirm) return;
     }
-    startNewGame();
+    setView('name_input');
+  };
+
+  const handleStartGameWithName = () => {
+    if (!nameInput.trim()) {
+      alert("⚠️ Digite um nome de Scrum Master válido!");
+      return;
+    }
+    startNewGame(nameInput.trim());
     onStartGame();
   };
 
@@ -85,6 +94,28 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
                 Save atual: Sprint {state.sprint} (XP {state.xp})
               </div>
             )}
+          </RetroCard>
+        )}
+
+        {view === 'name_input' && (
+          <RetroCard title="Nome do Scrum Master" className="text-center space-y-4">
+            <p className="text-[9px] text-retro-dimmed font-pressstart text-left mb-2">Digite o seu nome de facilitador:</p>
+            <input 
+              type="text" 
+              value={nameInput} 
+              onChange={(e) => setNameInput(e.target.value)}
+              maxLength={20}
+              className="w-full bg-[#131326] border-4 border-retro-border p-3 text-white font-mono text-center text-sm outline-none focus:border-retro-accent rounded"
+              placeholder="Digite seu nome..."
+            />
+            <div className="flex flex-col gap-3 pt-2">
+              <RetroButton variant="success" onClick={handleStartGameWithName} className="py-2.5 uppercase w-full">
+                🕹️ Começar Jogo
+              </RetroButton>
+              <RetroButton variant="danger" onClick={() => setView('main')} className="py-2.5 uppercase w-full">
+                Cancelar
+              </RetroButton>
+            </div>
           </RetroCard>
         )}
 

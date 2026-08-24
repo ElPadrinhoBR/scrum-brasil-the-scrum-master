@@ -53,6 +53,7 @@ export interface GameState {
   dialogueIndex: number;
   currentEventId: string | null;
   retroImprovement: string | null; // Selected action in Retro
+  playerName: string;
 }
 
 export const INITIAL_STATS: GameStats = {

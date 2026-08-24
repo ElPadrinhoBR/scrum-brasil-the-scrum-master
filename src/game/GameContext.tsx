@@ -12,7 +12,7 @@ interface GameContextType {
   setActiveTab: (tab: 'game' | 'team' | 'board') => void;
   muted: boolean;
   toggleMute: () => void;
-  startNewGame: () => void;
+  startNewGame: (playerName?: string) => void;
   loadSavedGame: () => boolean;
   advanceDialogueLine: () => void;
   selectDialogueChoice: (choice: DialogueChoice) => void;
@@ -51,8 +51,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasSaveGame(true);
   };
 
-  const startNewGame = () => {
+  const startNewGame = (playerName?: string) => {
     const freshState = SaveSystem.createInitialState();
+    if (playerName) {
+      freshState.playerName = playerName;
+    }
     
     // Load Sprint 1 stories and planning dialogs
     const firstSprint = SPRINTS_DATA[0];

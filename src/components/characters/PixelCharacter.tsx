@@ -13,6 +13,12 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
   size = 180,
   className = '',
 }) => {
+  const [imgState, setImgState] = React.useState<'expression' | 'base' | 'svg'>('expression');
+
+  React.useEffect(() => {
+    setImgState('expression');
+  }, [characterId, expression]);
+
   // Common colors
   const skinColor = '#ffdbb5';
   const skinShadow = '#e0a880';
@@ -90,13 +96,32 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
       className={`relative inline-block border-4 border-retro-border bg-retro-panel p-2 shadow-retro overflow-hidden ${className}`}
       style={{ width: size, height: size }}
     >
-      <svg
-        viewBox="0 0 24 24"
-        width="100%"
-        height="100%"
-        style={{ shapeRendering: 'crispEdges' }}
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      {imgState === 'expression' && (
+        <img 
+          src={`/characters/${characterId}_${expression}.png`} 
+          alt={`${characterId} (${expression})`} 
+          className="w-full h-full object-cover"
+          onError={() => setImgState('base')}
+        />
+      )}
+
+      {imgState === 'base' && (
+        <img 
+          src={`/characters/${characterId}.png`} 
+          alt={characterId} 
+          className="w-full h-full object-cover"
+          onError={() => setImgState('svg')}
+        />
+      )}
+
+      {imgState === 'svg' && (
+        <svg
+          viewBox="0 0 24 24"
+          width="100%"
+          height="100%"
+          style={{ shapeRendering: 'crispEdges' }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
         {/* Background Retro Grid */}
         <rect x="0" y="0" width="24" height="24" fill="#131326" />
         
@@ -327,6 +352,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
           </>
         )}
       </svg>
+      )}
     </div>
   );
 };

@@ -59,6 +59,7 @@ export const SaveSystem = {
       dialogueIndex: 0,
       currentEventId: null,
       retroImprovement: null,
+      playerName: 'Roberto',
     };
   }
 };

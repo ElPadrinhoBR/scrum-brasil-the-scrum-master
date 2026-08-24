@@ -203,6 +203,7 @@ export const GameScreen: React.FC = () => {
           onChoiceSelect={selectDialogueChoice}
           onAdvance={advanceDialogueLine}
           dialogueHistory={dialogueHistory}
+          playerName={state.playerName}
         />
       )}
 

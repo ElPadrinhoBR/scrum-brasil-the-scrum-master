@@ -3,6 +3,7 @@ import { DialogueChoice } from '../../data/sprints';
 import { SoundManager } from '../ui/SoundManager';
 import { RetroButton } from '../ui/RetroButton';
 import { SKILLS_DATA } from '../../data/skills';
+import { GLOSSARY_DATA } from '../../data/glossary';
 
 interface DialogueBoxProps {
   speaker: string;
@@ -12,6 +13,7 @@ interface DialogueBoxProps {
   onChoiceSelect: (choice: DialogueChoice) => void;
   onAdvance: () => void;
   dialogueHistory: Array<{ speaker: string; text: string }>;
+  playerName: string;
 }
 
 export const DialogueBox: React.FC<DialogueBoxProps> = ({
@@ -22,11 +24,16 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   onChoiceSelect,
   onAdvance,
   dialogueHistory,
+  playerName,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
   const textTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Format text by replacing the playerName placeholder
+  const formattedText = text.replace(/{playerName}/g, playerName);
 
   // Typewriter effect
   useEffect(() => {
@@ -38,14 +45,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       clearInterval(textTimerRef.current);
     }
 
-    // Split text into characters
-    const textChars = text.split('');
+    const textChars = formattedText.split('');
     
     textTimerRef.current = setInterval(() => {
       if (index < textChars.length) {
         const char = textChars[index];
         setDisplayedText((prev) => prev + char);
-        // Play retro chatter blip occasionally (not on spaces)
         if (char !== ' ' && index % 2 === 0) {
           SoundManager.playDialogue();
         }
@@ -54,22 +59,20 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         setIsTyping(false);
         if (textTimerRef.current) clearInterval(textTimerRef.current);
       }
-    }, 20); // Typing speed: 20ms per char
+    }, 20);
 
     return () => {
       if (textTimerRef.current) clearInterval(textTimerRef.current);
     };
-  }, [text]);
+  }, [formattedText]);
 
   const handleSkipOrAdvance = () => {
     if (isTyping) {
-      // Skip typewriter animation
       if (textTimerRef.current) clearInterval(textTimerRef.current);
-      setDisplayedText(text);
+      setDisplayedText(formattedText);
       setIsTyping(false);
       SoundManager.playClick();
     } else if (choices.length === 0) {
-      // Advance to next line if there are no choices
       onAdvance();
     }
   };
@@ -83,7 +86,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       marcos: { name: 'Marcos (QA)', color: 'text-red-500' },
       beatriz: { name: 'Beatriz (UX/UI)', color: 'text-yellow-500' },
       rafael: { name: 'Rafael (DevOps)', color: 'text-blue-500' },
-      'VOCÊ — SCRUM MASTER': { name: 'Você (Scrum Master)', color: 'text-retro-accent' },
+      'VOCÊ — SCRUM MASTER': { name: `${playerName} (Scrum Master)`, color: 'text-retro-accent' },
       SISTEMA: { name: 'SISTEMA', color: 'text-slate-400 font-bold' },
       NARRADOR: { name: 'NARRADOR', color: 'text-retro-dimmed italic' },
     };
@@ -102,6 +105,40 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     return SKILLS_DATA.find((s) => s.id === skillId)?.name || skillId;
   };
 
+  // Parses completed typewriter text to highlight and anchor glossary terms
+  const renderTextWithGlossaryLinks = (plainText: string) => {
+    const glossaryKeys = Object.keys(GLOSSARY_DATA);
+    glossaryKeys.sort((a, b) => b.length - a.length); // match longest terms first
+    
+    // Regex using word boundary and matching keys
+    const regex = new RegExp(`\\b(${glossaryKeys.join('|')})\\b`, 'gi');
+    const parts = plainText.split(regex);
+    if (parts.length === 1) return plainText;
+
+    return parts.map((part, i) => {
+      const matchedKey = glossaryKeys.find(
+        (key) => key.toLowerCase() === part.toLowerCase()
+      );
+
+      if (matchedKey) {
+        return (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent advancing dialogue line!
+              SoundManager.playClick();
+              setSelectedTerm(matchedKey);
+            }}
+            className="text-retro-accent hover:text-white underline font-semibold focus:outline-none px-0.5 bg-yellow-950/30 border-b border-dotted border-retro-accent hover:bg-retro-accent/15"
+          >
+            {part}
+          </button>
+        );
+      }
+      return part;
+    });
+  };
+
   return (
     <div className="w-full relative mt-auto">
       {/* Speaker Name Tag */}
@@ -116,15 +153,16 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           onClick={handleSkipOrAdvance}
           className="text-xs md:text-sm font-sans tracking-wide leading-relaxed cursor-pointer select-none grow min-h-[60px]"
         >
-          <span className={isTyping ? 'cursor-blink' : ''}>
-            {displayedText}
-          </span>
+          {isTyping ? (
+            <span className="cursor-blink">{displayedText}</span>
+          ) : (
+            <span>{renderTextWithGlossaryLinks(formattedText)}</span>
+          )}
         </div>
 
         {/* Buttons / Choice options */}
         <div className="mt-4 pt-4 border-t-2 border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex space-x-2">
-            {/* Histórico button */}
             <RetroButton 
               variant="secondary" 
               onClick={() => {
@@ -135,7 +173,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               📖 Histórico
             </RetroButton>
 
-            {/* Fast text forward if typing */}
             {isTyping && (
               <RetroButton 
                 variant="secondary" 
@@ -152,6 +189,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <div className="flex flex-col gap-2 w-full max-w-xl">
                 {choices.map((choice, i) => {
                   const skillMet = isSkillMet(choice.requiredSkill);
+                  const formattedChoiceText = choice.text.replace(/{playerName}/g, playerName);
                   
                   return (
                     <button
@@ -177,13 +215,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                           [HABILIDADE ATIVA: {getSkillName(choice.requiredSkill).toUpperCase()}]
                         </span>
                       )}
-                      {choice.text}
+                      {formattedChoiceText}
                     </button>
                   );
                 })}
               </div>
             ) : (
-              // Advance prompt indicator
               !isTyping && (
                 <button
                   onClick={handleSkipOrAdvance}
@@ -197,6 +234,25 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Glossary Term modal */}
+      {selectedTerm && (
+        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-[60]">
+          <div className="bg-retro-panel border-4 border-retro-accent p-5 shadow-retro-lg max-w-md w-full text-left">
+            <h4 className="font-pressstart text-[11px] text-retro-accent uppercase tracking-wider mb-2">
+              📖 GLOSSÁRIO ÁGIL: {selectedTerm}
+            </h4>
+            <div className="bg-[#131326] p-3 border-2 border-retro-border text-xs md:text-sm font-sans leading-relaxed text-slate-200 mb-4">
+              {GLOSSARY_DATA[selectedTerm]}
+            </div>
+            <div className="flex justify-end">
+              <RetroButton variant="warning" onClick={() => setSelectedTerm(null)} className="text-[9px]">
+                Fechar Explicação
+              </RetroButton>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dialogue History Modal */}
       {showHistory && (
@@ -213,12 +269,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               ) : (
                 dialogueHistory.map((item, index) => {
                   const itemDetails = getSpeakerDetails(item.speaker);
+                  const formattedItemText = item.text.replace(/{playerName}/g, playerName);
                   return (
                     <div key={index} className="border-b border-slate-800 pb-2">
                       <span className={`block font-pressstart text-[9px] mb-1 ${itemDetails.color}`}>
                         {itemDetails.name}
                       </span>
-                      <p className="text-retro-text">{item.text}</p>
+                      <p className="text-retro-text">{formattedItemText}</p>
                     </div>
                   );
                 })
