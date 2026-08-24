@@ -7,6 +7,9 @@ import { GameScreen } from './pages/GameScreen';
 import { SprintBoardPage } from './pages/SprintBoardPage';
 import { TeamScreen } from './pages/TeamScreen';
 import { ResultsScreen } from './pages/ResultsScreen';
+import { AIModeConfig } from './pages/AIModeConfig';
+import { AIModeGame } from './pages/AIModeGame';
+import { AIConfig } from './ai/AIConfig';
 
 const GameShell: React.FC<{ onBackToMenu: () => void }> = ({ onBackToMenu }) => {
   const { state, activeTab, setActiveTab } = useGame();
@@ -27,16 +30,46 @@ const GameShell: React.FC<{ onBackToMenu: () => void }> = ({ onBackToMenu }) => 
   );
 };
 
+type AppView = 'menu' | 'game' | 'ai_config' | 'ai_game';
+
 export const App: React.FC = () => {
-  const [gameStarted, setGameStarted] = useState(false);
+  const [view, setView] = useState<AppView>('menu');
+  const [aiConfig, setAiConfig] = useState<AIConfig | null>(null);
+  const [aiPlayerName, setAiPlayerName] = useState('');
+
+  const handleStartAI = (config: AIConfig, playerName: string) => {
+    setAiConfig(config);
+    setAiPlayerName(playerName);
+    setView('ai_game');
+  };
 
   return (
     <LanguageProvider>
       <GameProvider>
-        {gameStarted ? (
-          <GameShell onBackToMenu={() => setGameStarted(false)} />
-        ) : (
-          <MainMenu onStartGame={() => setGameStarted(true)} />
+        {view === 'menu' && (
+          <MainMenu
+            onStartGame={() => setView('game')}
+            onAIMode={() => setView('ai_config')}
+          />
+        )}
+
+        {view === 'game' && (
+          <GameShell onBackToMenu={() => setView('menu')} />
+        )}
+
+        {view === 'ai_config' && (
+          <AIModeConfig
+            onBack={() => setView('menu')}
+            onStart={handleStartAI}
+          />
+        )}
+
+        {view === 'ai_game' && aiConfig && (
+          <AIModeGame
+            config={aiConfig}
+            playerName={aiPlayerName}
+            onBack={() => setView('ai_config')}
+          />
         )}
       </GameProvider>
     </LanguageProvider>

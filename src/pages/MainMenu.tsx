@@ -9,6 +9,7 @@ import { AgileLearningPage } from './AgileLearningPage';
 
 interface MainMenuProps {
   onStartGame: () => void;
+  onAIMode: () => void;
 }
 
 const LANG_OPTIONS: { code: Language; flag: string; label: string }[] = [
@@ -17,7 +18,7 @@ const LANG_OPTIONS: { code: Language; flag: string; label: string }[] = [
   { code: 'es-ES', flag: '🇪🇸', label: 'ES' },
 ];
 
-export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onAIMode }) => {
   const { startNewGame, loadSavedGame, hasSaveGame, state, muted, toggleMute } = useGame();
   const { lang, setLang, t } = useLanguage();
   const [view, setView] = useState<'main' | 'achievements' | 'credits' | 'name_input' | 'mode_select' | 'agile_learning'>('main');
@@ -117,6 +118,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame }) => {
                 className="w-full py-3 border-2 border-retro-purple bg-[#1a0c26]/60 hover:bg-[#1a0c26] hover:border-retro-accent transition-all font-pressstart text-[11px] text-retro-purple hover:text-white uppercase"
               >
                 {t.menu.agileManagement}
+              </button>
+
+              {/* Modo IA */}
+              <button
+                onClick={() => onAIMode()}
+                className="w-full py-3 border-2 border-blue-500 bg-[#0c0f26]/60 hover:bg-[#0c0f26] hover:border-retro-accent transition-all font-pressstart text-[11px] text-blue-400 hover:text-white uppercase"
+              >
+                🤖 Modo IA — Situações Infinitas
               </button>
 
               <RetroButton variant="secondary" onClick={() => setView('achievements')} className="py-3 text-[11px] uppercase">
