@@ -1,0 +1,143 @@
+import React from 'react';
+import { GameState, getLevelName, getRequiredXPForLevel } from '../../game/GameState';
+import { RetroButton } from '../ui/RetroButton';
+
+interface HUDProps {
+  state: GameState;
+  activeTab: 'game' | 'team' | 'board';
+  setActiveTab: (tab: 'game' | 'team' | 'board') => void;
+  onExit: () => void;
+}
+
+export const HUD: React.FC<HUDProps> = ({
+  state,
+  activeTab,
+  setActiveTab,
+  onExit,
+}) => {
+  const { sprint, xp, level, stats, currentSprintGoal, phase } = state;
+  const xpNeeded = getRequiredXPForLevel(level);
+
+  // Helper to draw text progress bar
+  const renderTextBar = (val: number, isRisk = false) => {
+    const totalBlocks = 10;
+    const filledBlocks = Math.round((Math.max(0, Math.min(100, val)) / 100) * totalBlocks);
+    const emptyBlocks = totalBlocks - filledBlocks;
+    
+    // Choose colors based on value and whether it is risk
+    let textColor = 'text-retro-green';
+    if (isRisk) {
+      if (val > 60) textColor = 'text-retro-red';
+      else if (val > 30) textColor = 'text-retro-accent';
+    } else {
+      if (val < 40) textColor = 'text-retro-red';
+      else if (val < 70) textColor = 'text-retro-accent';
+    }
+
+    return (
+      <div className="flex items-center space-x-1 font-mono">
+        <span className={textColor}>
+          {'█'.repeat(filledBlocks)}
+          <span className="opacity-20">{'░'.repeat(emptyBlocks)}</span>
+        </span>
+        <span className="text-[10px] font-pressstart ml-1">{val}%</span>
+      </div>
+    );
+  };
+
+  return (
+    <div className="border-4 border-retro-border bg-retro-panel p-4 shadow-retro mb-4">
+      {/* Top row: Sprint, Level, Navigation */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b-4 border-retro-border gap-4">
+        {/* Sprint Goal & Title */}
+        <div>
+          <div className="font-pressstart text-[14px] text-retro-accent">
+            SPRINT {sprint.toString().padStart(2, '0')} / 08
+          </div>
+          <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
+            Status: <span className="text-white">{phase}</span>
+          </div>
+        </div>
+
+        {/* Level and XP */}
+        <div className="flex-1 md:mx-6 bg-[#131326] p-2 border-2 border-retro-border flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <div className="flex flex-col">
+            <span className="text-[9px] text-retro-accent font-pressstart uppercase">XP: {xp} / {xpNeeded}</span>
+            <span className="text-[10px] font-pressstart truncate text-white">{getLevelName(level)}</span>
+          </div>
+          {/* XP Bar */}
+          <div className="w-full md:w-32 bg-slate-900 border border-slate-700 h-3 relative overflow-hidden">
+            <div 
+              className="bg-retro-purple h-full transition-all duration-300"
+              style={{ width: `${Math.min(100, (xp / xpNeeded) * 100)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Tabs and Actions */}
+        <div className="flex flex-wrap gap-2">
+          <RetroButton 
+            variant={activeTab === 'game' ? 'warning' : 'secondary'} 
+            onClick={() => setActiveTab('game')}
+          >
+            💬 História
+          </RetroButton>
+          <RetroButton 
+            variant={activeTab === 'board' ? 'warning' : 'secondary'} 
+            onClick={() => setActiveTab('board')}
+          >
+            📋 Kanban
+          </RetroButton>
+          <RetroButton 
+            variant={activeTab === 'team' ? 'warning' : 'secondary'} 
+            onClick={() => setActiveTab('team')}
+          >
+            👥 Equipe
+          </RetroButton>
+          <RetroButton 
+            variant="danger" 
+            onClick={onExit}
+          >
+            ❌ Menu
+          </RetroButton>
+        </div>
+      </div>
+
+      {/* Grid of Global Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 py-3 border-b-2 border-slate-800 text-[10px]">
+        <div className="flex flex-col space-y-1">
+          <span className="font-pressstart text-retro-accent">🎯 VALOR</span>
+          {renderTextBar(stats.valor)}
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="font-pressstart text-retro-purple">❤️ MORAL</span>
+          {renderTextBar(stats.moral)}
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="font-pressstart text-retro-green">🧪 QUALIDADE</span>
+          {renderTextBar(stats.qualidade)}
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="font-pressstart text-retro-blue">⚡ VELOCIDADE</span>
+          {renderTextBar(stats.velocidade)}
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="font-pressstart text-white">🤝 CONFIANÇA</span>
+          {renderTextBar(stats.confianca)}
+        </div>
+        <div className="flex flex-col space-y-1">
+          <span className="font-pressstart text-retro-red">⚠️ RISCO</span>
+          {renderTextBar(stats.risco, true)}
+        </div>
+      </div>
+
+      {/* Sprint Goal banner */}
+      {currentSprintGoal && (
+        <div className="pt-2 text-[10px] flex items-center bg-[#131326] px-2 py-1.5 border border-dashed border-retro-border">
+          <span className="font-pressstart text-retro-accent mr-2">META DA SPRINT:</span>
+          <span className="text-white italic">"{currentSprintGoal}"</span>
+        </div>
+      )}
+    </div>
+  );
+};
