@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RetroCard } from '../components/ui/RetroCard';
 import { RetroButton } from '../components/ui/RetroButton';
 import {
-  AIConfig, AIProvider, AIConfigStorage,
-  AI_MODELS, AI_PROVIDER_INFO,
+  AIConfig, AIProvider, AIConfigStorage, AI_PROVIDER_INFO,
 } from '../ai/AIConfig';
 import { testConnection } from '../ai/AIService';
 
@@ -12,9 +11,40 @@ interface AIModeConfigProps {
   onStart: (config: AIConfig, playerName: string) => void;
 }
 
+// Sugestões de modelos por provider — apenas referência, não lista obrigatória
+const MODEL_HINTS: Record<AIProvider, { id: string; label: string }[]> = {
+  gemini: [
+    { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+    { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+    { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+    { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+    { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+  ],
+  openai: [
+    { id: 'gpt-4o', label: 'GPT-4o' },
+    { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+    { id: 'o1-mini', label: 'o1 Mini' },
+    { id: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+    { id: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+  ],
+  claude: [
+    { id: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
+    { id: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
+    { id: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
+    { id: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
+    { id: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku' },
+  ],
+};
+
+const DEFAULT_MODELS: Record<AIProvider, string> = {
+  gemini: 'gemini-2.5-flash',
+  openai: 'gpt-4o',
+  claude: 'claude-sonnet-4-5',
+};
+
 export const AIModeConfig: React.FC<AIModeConfigProps> = ({ onBack, onStart }) => {
   const [provider, setProvider] = useState<AIProvider>('gemini');
-  const [model, setModel] = useState('gemini-1.5-flash');
+  const [model, setModel] = useState(DEFAULT_MODELS.gemini);
   const [apiKey, setApiKey] = useState('');
   const [playerName, setPlayerName] = useState('Roberto');
   const [showKey, setShowKey] = useState(false);
@@ -31,32 +61,33 @@ export const AIModeConfig: React.FC<AIModeConfigProps> = ({ onBack, onStart }) =
     }
   }, []);
 
-  // Reset model when provider changes
   const handleProviderChange = (p: AIProvider) => {
     setProvider(p);
-    setModel(AI_MODELS[p][0].id);
+    setModel(DEFAULT_MODELS[p]);
     setTestResult(null);
   };
 
   const handleTest = async () => {
     if (!apiKey.trim()) { setTestResult({ ok: false, error: 'Insira uma chave de API antes de testar.' }); return; }
+    if (!model.trim()) { setTestResult({ ok: false, error: 'Insira o nome do modelo.' }); return; }
     setTesting(true);
     setTestResult(null);
-    const result = await testConnection({ provider, model, apiKey });
+    const result = await testConnection({ provider, model: model.trim(), apiKey });
     setTestResult(result);
     setTesting(false);
   };
 
   const handleStart = () => {
     if (!apiKey.trim()) { alert('⚠️ Insira sua chave de API para continuar.'); return; }
+    if (!model.trim()) { alert('⚠️ Insira o nome do modelo.'); return; }
     if (!playerName.trim()) { alert('⚠️ Insira seu nome de Scrum Master.'); return; }
-    const config: AIConfig = { provider, model, apiKey };
+    const config: AIConfig = { provider, model: model.trim(), apiKey };
     AIConfigStorage.save(config);
     onStart(config, playerName.trim());
   };
 
   const info = AI_PROVIDER_INFO[provider];
-  const models = AI_MODELS[provider];
+  const hints = MODEL_HINTS[provider];
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text flex flex-col items-center justify-center p-4 relative overflow-hidden select-none">
@@ -118,27 +149,41 @@ export const AIModeConfig: React.FC<AIModeConfigProps> = ({ onBack, onStart }) =
           )}
         </RetroCard>
 
-        {/* Model Selection */}
-        <RetroCard title={`🧩 Modelo (${info.name})`}>
-          <div className="space-y-2">
-            {models.map((m) => (
+        {/* Model — free text input + quick-fill chips */}
+        <RetroCard title={`🧩 Modelo — ${info.name}`}>
+          {/* Free text field */}
+          <input
+            type="text"
+            value={model}
+            onChange={(e) => { setModel(e.target.value); setTestResult(null); }}
+            className="w-full bg-[#131326] border-4 border-retro-border p-3 text-white font-mono text-sm outline-none focus:border-retro-accent rounded mb-3"
+            placeholder="Digite o ID exato do modelo..."
+            spellCheck={false}
+            autoComplete="off"
+          />
+
+          {/* Quick-fill suggestion chips */}
+          <p className="text-[9px] text-retro-dimmed font-pressstart mb-2 uppercase">Sugestões rápidas:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {hints.map((h) => (
               <button
-                key={m.id}
-                onClick={() => setModel(m.id)}
-                className={`w-full text-left p-3 border-2 rounded transition-all ${
-                  model === m.id
-                    ? 'border-retro-accent bg-slate-900/80'
-                    : 'border-slate-700 bg-slate-950/50 hover:border-slate-600'
+                key={h.id}
+                onClick={() => { setModel(h.id); setTestResult(null); }}
+                title={h.id}
+                className={`px-2 py-1 text-[9px] font-mono border rounded transition-all ${
+                  model === h.id
+                    ? 'border-retro-accent bg-slate-800 text-retro-accent'
+                    : 'border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-500 hover:text-white'
                 }`}
               >
-                <div className="flex justify-between items-center">
-                  <span className="font-pressstart text-[9px] text-white">{m.label}</span>
-                  <span className="text-[8px] font-mono text-retro-dimmed">{m.contextWindow}</span>
-                </div>
-                <p className="text-xs font-sans text-slate-400 mt-1">{m.description}</p>
+                {h.label}
               </button>
             ))}
           </div>
+
+          <p className="text-[9px] font-sans text-slate-500 mt-3">
+            💡 Digite qualquer modelo disponível no provider escolhido. Os chips acima são apenas atalhos.
+          </p>
         </RetroCard>
 
         {/* API Key */}
@@ -182,7 +227,7 @@ export const AIModeConfig: React.FC<AIModeConfigProps> = ({ onBack, onStart }) =
           </div>
 
           {/* Test connection */}
-          <div className="flex items-center gap-3 mt-3">
+          <div className="flex flex-wrap items-center gap-3 mt-3">
             <RetroButton
               variant="secondary"
               onClick={handleTest}
