@@ -226,4 +226,17 @@ export const GameScreen: React.FC = () => {
               <button 
                 onClick={() => {
                   // Switch tab to board
-                  const
+                  const boardTabBtn = document.querySelector('button[class*="Kanban"]') as HTMLButtonElement;
+                  if (boardTabBtn) boardTabBtn.click();
+                }}
+                className="retro-border-interactive px-4 py-2 bg-retro-accent font-pressstart text-[9px] text-black font-bold uppercase"
+              >
+                📋 Ir para o Quadro Kanban
+              </button>
+            </div>
+          </RetroCard>
+        </div>
+      )}
+    </div>
+  );
+};
