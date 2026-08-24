@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RetroCard } from '../components/ui/RetroCard';
 import { RetroButton } from '../components/ui/RetroButton';
 
@@ -17,29 +17,96 @@ const SECTIONS: { id: Section; icon: string; label: string }[] = [
   { id: 'manager', icon: '🏆', label: 'Gestor de TI' },
 ];
 
+// ── Text-to-Speech helper ──────────────────────────────────────────────────────
+// Extracts all readable text from a DOM element, used to feed SpeechSynthesis
+const getTextContent = (el: HTMLElement | null): string => {
+  if (!el) return '';
+  return (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+};
+
 export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) => {
   const [section, setSection] = useState<Section>('overview');
+  const [speaking, setSpeaking] = useState(false);
+  const [ttsSupported] = useState(() => 'speechSynthesis' in window);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Stop speech whenever section changes
+  useEffect(() => {
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+  }, [section]);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
+
+  const handleSpeak = () => {
+    if (!ttsSupported) return;
+
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+
+    const text = getTextContent(contentRef.current);
+    if (!text) return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'pt-BR';
+    utterance.rate = 0.92;
+    utterance.pitch = 1;
+
+    // Pick a Portuguese voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const ptVoice = voices.find(v => v.lang.startsWith('pt'));
+    if (ptVoice) utterance.voice = ptVoice;
+
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+    setSpeaking(true);
+  };
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text p-4 md:p-6 select-none max-w-5xl mx-auto flex flex-col">
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
         <div>
-          <h1 className="font-pressstart text-lg md:text-2xl text-retro-accent uppercase">📚 Gestão Ágil</h1>
-          <p className="text-[9px] text-retro-dimmed font-pressstart mt-1">Centro de Aprendizado · Do Zero ao Excelente Gestor de TI</p>
+          <h1 className="font-pressstart text-xl md:text-3xl text-retro-accent uppercase">📚 Gestão Ágil</h1>
+          <p className="text-xs md:text-sm text-retro-dimmed font-pressstart mt-1">Centro de Aprendizado · Do Zero ao Excelente Gestor de TI</p>
         </div>
-        <RetroButton variant="secondary" onClick={onBack} className="text-[9px] uppercase shrink-0">
-          ← Voltar
-        </RetroButton>
+        <div className="flex gap-2 shrink-0 flex-wrap">
+          {/* TTS Button */}
+          {ttsSupported && (
+            <button
+              onClick={handleSpeak}
+              title={speaking ? 'Parar leitura' : 'Ouvir este conteúdo'}
+              className={`px-4 py-2 font-pressstart text-[10px] md:text-xs border-2 uppercase transition-all flex items-center gap-2 ${
+                speaking
+                  ? 'border-retro-red bg-red-950/60 text-retro-red animate-pulse'
+                  : 'border-retro-purple bg-[#1a0c26]/60 text-retro-purple hover:border-retro-accent hover:text-white'
+              }`}
+            >
+              {speaking ? '⏹ Parar' : '🔊 Ouvir'}
+            </button>
+          )}
+          <RetroButton variant="secondary" onClick={onBack} className="text-[10px] md:text-xs uppercase">
+            ← Voltar
+          </RetroButton>
+        </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-5">
         {SECTIONS.map((s) => (
           <button
             key={s.id}
             onClick={() => setSection(s.id)}
-            className={`px-3 py-2 font-pressstart text-[8px] border-2 transition-all uppercase ${
+            className={`px-3 py-2 font-pressstart text-[10px] md:text-xs border-2 transition-all uppercase ${
               section === s.id
                 ? 'border-retro-accent bg-retro-panel text-retro-accent'
                 : 'border-slate-700 bg-slate-950/60 text-slate-400 hover:border-slate-500 hover:text-white'
@@ -50,14 +117,14 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
         ))}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto space-y-4">
+      {/* Scrollable Content */}
+      <div ref={contentRef} className="flex-1 overflow-y-auto space-y-5">
 
         {/* ═══════════════════ OVERVIEW ═══════════════════ */}
         {section === 'overview' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <RetroCard title="🗺️ O que é Gestão Ágil?" className="border-retro-accent">
-              <p className="text-sm font-sans text-slate-300 leading-relaxed mb-4">
+              <p className="text-sm md:text-base font-sans text-slate-300 leading-relaxed mb-4">
                 <strong className="text-white">Gestão Ágil</strong> é uma abordagem de gerenciamento de projetos e equipes que valoriza a <strong className="text-retro-accent">adaptação contínua</strong> ao invés de planos rígidos. Nasceu no desenvolvimento de software com o <em>Manifesto Ágil (2001)</em>, mas hoje se expande para finanças, marketing, RH e toda empresa que precisa entregar valor mais rápido.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -68,15 +135,15 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { title: '🔬 XP (Extreme Programming)', desc: 'Práticas técnicas rigorosas: TDD, pair programming, CI/CD.', color: 'border-purple-500' },
                 ].map((item) => (
                   <div key={item.title} className={`border-2 ${item.color} bg-slate-950/40 p-3 rounded`}>
-                    <div className="font-pressstart text-[9px] text-white mb-1">{item.title}</div>
-                    <p className="text-[10px] font-sans text-slate-300">{item.desc}</p>
+                    <div className="font-pressstart text-xs md:text-sm text-white mb-2">{item.title}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{item.desc}</p>
                   </div>
                 ))}
               </div>
             </RetroCard>
 
             <RetroCard title="📜 O Manifesto Ágil (2001)" className="border-retro-blue">
-              <p className="text-[10px] font-sans text-slate-300 mb-3">17 desenvolvedores se reuniram em Utah (EUA) e criaram os 4 valores fundamentais:</p>
+              <p className="text-sm md:text-base font-sans text-slate-300 mb-3">17 desenvolvedores se reuniram em Utah (EUA) e criaram os 4 valores fundamentais:</p>
               <div className="space-y-2">
                 {[
                   { left: '👤 Indivíduos e interações', right: 'mais que processos e ferramentas' },
@@ -84,10 +151,10 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { left: '🤝 Colaboração com o cliente', right: 'mais que negociação de contratos' },
                   { left: '🔄 Responder a mudanças', right: 'mais que seguir um plano' },
                 ].map((v) => (
-                  <div key={v.left} className="flex items-center gap-2 bg-slate-900/50 p-2 rounded border border-slate-800">
-                    <span className="text-[10px] font-semibold text-retro-accent font-sans shrink-0">{v.left}</span>
-                    <span className="text-[9px] text-slate-500 font-sans shrink-0">►</span>
-                    <span className="text-[10px] text-slate-400 font-sans">{v.right}</span>
+                  <div key={v.left} className="flex flex-wrap items-center gap-2 bg-slate-900/50 p-3 rounded border border-slate-800">
+                    <span className="text-sm md:text-base font-semibold text-retro-accent font-sans">{v.left}</span>
+                    <span className="text-sm text-slate-500 font-sans">►</span>
+                    <span className="text-sm md:text-base text-slate-400 font-sans">{v.right}</span>
                   </div>
                 ))}
               </div>
@@ -100,9 +167,9 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { stat: '3x', desc: 'mais velocidade de entrega em projetos ágeis vs tradicionais' },
                   { stat: 'R$18k+', desc: 'salário médio de um Scrum Master sênior no Brasil (2024)' },
                 ].map((s) => (
-                  <div key={s.stat} className="bg-slate-900/60 border border-retro-green/40 p-3 rounded text-center">
-                    <div className="font-pressstart text-xl text-retro-green mb-1">{s.stat}</div>
-                    <p className="text-[9px] font-sans text-slate-300">{s.desc}</p>
+                  <div key={s.stat} className="bg-slate-900/60 border border-retro-green/40 p-4 rounded text-center">
+                    <div className="font-pressstart text-2xl md:text-3xl text-retro-green mb-2">{s.stat}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{s.desc}</p>
                   </div>
                 ))}
               </div>
@@ -112,16 +179,16 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
 
         {/* ═══════════════════ SCRUM ═══════════════════ */}
         {section === 'scrum' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <RetroCard title="🔄 O que é Scrum?" className="border-retro-blue">
-              <p className="text-sm font-sans text-slate-300 leading-relaxed mb-3">
+              <p className="text-sm md:text-base font-sans text-slate-300 leading-relaxed mb-3">
                 Scrum é um <strong className="text-white">framework leve</strong> que ajuda pessoas, times e organizações a gerar valor por meio de soluções adaptativas para problemas complexos. Não é uma metodologia completa — é um framework intencional que você preenche com suas práticas.
               </p>
-              <p className="text-[10px] font-sans text-retro-dimmed">📖 Criado por Ken Schwaber e Jeff Sutherland · Documentado no Scrum Guide (revisão mais recente: 2020)</p>
+              <p className="text-sm text-retro-dimmed font-sans">📖 Criado por Ken Schwaber e Jeff Sutherland · Documentado no Scrum Guide (revisão mais recente: 2020)</p>
             </RetroCard>
 
             <RetroCard title="👥 Os 3 Papéis do Scrum" className="border-retro-accent">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   {
                     role: '🧭 Scrum Master',
@@ -143,10 +210,10 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   },
                 ].map((r) => (
                   <div key={r.role} className={`border-2 ${r.color} bg-slate-950/40 p-4 rounded`}>
-                    <div className="font-pressstart text-[10px] text-white mb-2">{r.role}</div>
-                    <p className="text-[10px] font-sans text-slate-300 mb-2">{r.desc}</p>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {r.duties.map((d) => <li key={d} className="text-[9px] font-sans text-slate-400">{d}</li>)}
+                    <div className="font-pressstart text-xs md:text-sm text-white mb-2">{r.role}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300 mb-3">{r.desc}</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {r.duties.map((d) => <li key={d} className="text-sm md:text-base font-sans text-slate-400">{d}</li>)}
                     </ul>
                   </div>
                 ))}
@@ -154,7 +221,7 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
             </RetroCard>
 
             <RetroCard title="📅 Os 5 Eventos do Scrum" className="border-retro-purple">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {[
                   { event: '🗓️ Sprint', time: '1 a 4 semanas', desc: 'Container de todos os outros eventos. Duração fixa (timebox). Nunca cancelada sem razão extrema.' },
                   { event: '📋 Sprint Planning', time: 'até 8h por Sprint de 1 mês', desc: 'O time define O QUE será feito (Sprint Goal) e COMO será feito (Sprint Backlog).' },
@@ -163,46 +230,48 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { event: '🪞 Sprint Retrospective', time: 'até 3h por Sprint de 1 mês', desc: 'O time inspeciona a si mesmo: Pessoas, relações, processos e ferramentas. Define 1 melhoria concreta.' },
                 ].map((e) => (
                   <div key={e.event} className="bg-slate-900/50 border border-slate-800 p-3 rounded">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="font-pressstart text-[9px] text-retro-accent">{e.event}</span>
-                      <span className="text-[8px] font-pressstart text-retro-dimmed">{e.time}</span>
+                    <div className="flex flex-wrap justify-between items-start gap-1 mb-2">
+                      <span className="font-pressstart text-xs md:text-sm text-retro-accent">{e.event}</span>
+                      <span className="text-xs font-pressstart text-retro-dimmed">{e.time}</span>
                     </div>
-                    <p className="text-[10px] font-sans text-slate-300">{e.desc}</p>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{e.desc}</p>
                   </div>
                 ))}
               </div>
             </RetroCard>
 
             <RetroCard title="📦 Os 3 Artefatos do Scrum" className="border-retro-green">
-              {[
-                { artifact: '📜 Product Backlog', owner: 'Product Owner', desc: 'Lista ordenada de tudo que pode ser necessário no produto. Nunca está "pronto" — evolui continuamente.' },
-                { artifact: '📋 Sprint Backlog', owner: 'Developers', desc: 'O Sprint Goal + itens selecionados do Product Backlog + plano de como entregar o Incremento.' },
-                { artifact: '✅ Incremento', owner: 'Scrum Team', desc: 'Soma de todos os itens do backlog concluídos na Sprint conforme a Definition of Done. Deve ser utilizável.' },
-              ].map((a) => (
-                <div key={a.artifact} className="bg-slate-900/50 border border-slate-800 p-3 rounded mb-2">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-pressstart text-[9px] text-white">{a.artifact}</span>
-                    <span className="text-[8px] text-retro-dimmed font-mono">owner: {a.owner}</span>
+              <div className="space-y-3">
+                {[
+                  { artifact: '📜 Product Backlog', owner: 'Product Owner', desc: 'Lista ordenada de tudo que pode ser necessário no produto. Nunca está "pronto" — evolui continuamente.' },
+                  { artifact: '📋 Sprint Backlog', owner: 'Developers', desc: 'O Sprint Goal + itens selecionados do Product Backlog + plano de como entregar o Incremento.' },
+                  { artifact: '✅ Incremento', owner: 'Scrum Team', desc: 'Soma de todos os itens do backlog concluídos na Sprint conforme a Definition of Done. Deve ser utilizável.' },
+                ].map((a) => (
+                  <div key={a.artifact} className="bg-slate-900/50 border border-slate-800 p-3 rounded">
+                    <div className="flex flex-wrap justify-between gap-1 mb-1">
+                      <span className="font-pressstart text-xs md:text-sm text-white">{a.artifact}</span>
+                      <span className="text-xs text-retro-dimmed font-mono">owner: {a.owner}</span>
+                    </div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{a.desc}</p>
                   </div>
-                  <p className="text-[10px] font-sans text-slate-300">{a.desc}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </RetroCard>
           </div>
         )}
 
         {/* ═══════════════════ KANBAN ═══════════════════ */}
         {section === 'kanban' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <RetroCard title="📋 O que é Kanban?" className="border-retro-green">
-              <p className="text-sm font-sans text-slate-300 leading-relaxed mb-3">
+              <p className="text-sm md:text-base font-sans text-slate-300 leading-relaxed mb-3">
                 Kanban é um método de <strong className="text-white">gestão visual do fluxo de trabalho</strong> criado na Toyota nos anos 1950. A palavra japonesa <em>看板</em> significa "sinal visual" ou "cartão". O objetivo é tornar o trabalho visível para identificar gargalos e melhorar continuamente.
               </p>
-              <p className="text-[10px] font-sans text-retro-dimmed">⚠️ Kanban NÃO é só um quadro de post-its! É um sistema completo de melhoria contínua.</p>
+              <p className="text-sm font-sans text-retro-dimmed">⚠️ Kanban NÃO é só um quadro de post-its! É um sistema completo de melhoria contínua.</p>
             </RetroCard>
 
             <RetroCard title="🏗️ Os 6 Princípios do Kanban" className="border-retro-accent">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {[
                   { n: '1', p: 'Visualizar o trabalho', d: 'Torne todo trabalho visível no quadro. Nada pode ser feito "na cabeça".' },
                   { n: '2', p: 'Limitar o WIP', d: 'Work In Progress limitado evita sobrecarga e multitarefa destrutiva.' },
@@ -212,8 +281,8 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { n: '6', p: 'Melhoria colaborativa', d: 'A equipe inteira participa das mudanças de processo de forma evolutiva.' },
                 ].map((p) => (
                   <div key={p.n} className="bg-slate-900/50 border border-slate-800 p-3 rounded">
-                    <div className="font-pressstart text-[9px] text-retro-green mb-1">#{p.n} {p.p}</div>
-                    <p className="text-[9px] font-sans text-slate-300">{p.d}</p>
+                    <div className="font-pressstart text-xs md:text-sm text-retro-green mb-1">#{p.n} {p.p}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{p.d}</p>
                   </div>
                 ))}
               </div>
@@ -221,12 +290,12 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
 
             <RetroCard title="📊 Kanban vs Scrum: Qual usar?" className="border-retro-blue">
               <div className="overflow-x-auto">
-                <table className="w-full text-[9px] font-sans border-collapse">
+                <table className="w-full text-sm md:text-base font-sans border-collapse">
                   <thead>
                     <tr className="bg-slate-900">
-                      <th className="border border-slate-700 p-2 text-left text-retro-accent font-pressstart text-[8px]">Critério</th>
-                      <th className="border border-slate-700 p-2 text-left text-retro-blue font-pressstart text-[8px]">Scrum</th>
-                      <th className="border border-slate-700 p-2 text-left text-retro-green font-pressstart text-[8px]">Kanban</th>
+                      <th className="border border-slate-700 p-3 text-left text-retro-accent font-pressstart text-xs">Critério</th>
+                      <th className="border border-slate-700 p-3 text-left text-retro-blue font-pressstart text-xs">Scrum</th>
+                      <th className="border border-slate-700 p-3 text-left text-retro-green font-pressstart text-xs">Kanban</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -239,9 +308,9 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                       ['Nível de estrutura', 'Alto — muitos eventos prescritos', 'Baixo — altamente flexível'],
                     ].map(([c, s, k]) => (
                       <tr key={c} className="border-b border-slate-800 hover:bg-slate-900/30">
-                        <td className="border border-slate-700 p-2 text-slate-400 font-semibold">{c}</td>
-                        <td className="border border-slate-700 p-2 text-slate-300">{s}</td>
-                        <td className="border border-slate-700 p-2 text-slate-300">{k}</td>
+                        <td className="border border-slate-700 p-3 text-slate-400 font-semibold">{c}</td>
+                        <td className="border border-slate-700 p-3 text-slate-300">{s}</td>
+                        <td className="border border-slate-700 p-3 text-slate-300">{k}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -253,7 +322,7 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
 
         {/* ═══════════════════ OUTRAS TÉCNICAS ═══════════════════ */}
         {section === 'other' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {[
               {
                 title: '🚀 SAFe — Scaled Agile Framework',
@@ -302,9 +371,9 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
               },
             ].map((tech) => (
               <RetroCard key={tech.title} title={tech.title} className={tech.color}>
-                <p className="text-[10px] font-sans text-slate-300 mb-3 leading-relaxed">{tech.intro}</p>
-                <ul className="list-disc pl-4 space-y-1">
-                  {tech.points.map((p) => <li key={p} className="text-[9px] font-sans text-slate-400">{p}</li>)}
+                <p className="text-sm md:text-base font-sans text-slate-300 mb-4 leading-relaxed">{tech.intro}</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  {tech.points.map((p) => <li key={p} className="text-sm md:text-base font-sans text-slate-400">{p}</li>)}
                 </ul>
               </RetroCard>
             ))}
@@ -313,17 +382,17 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
 
         {/* ═══════════════════ MERCADO ═══════════════════ */}
         {section === 'market' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <RetroCard title="💼 Mercado de TI Ágil no Brasil e no Mundo" className="border-retro-accent">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
                 {[
                   { stat: '#1', label: 'Scrum é o framework ágil mais adotado no mundo', color: 'text-retro-accent' },
                   { stat: '94%', label: 'das empresas relatam benefícios após adotar agilidade', color: 'text-retro-green' },
                   { stat: '580k+', label: 'profissionais certificados em Scrum no mundo (2024)', color: 'text-retro-blue' },
                 ].map((s) => (
-                  <div key={s.stat} className="bg-slate-900/60 border border-slate-700 p-3 rounded text-center">
-                    <div className={`font-pressstart text-xl ${s.color} mb-1`}>{s.stat}</div>
-                    <p className="text-[9px] font-sans text-slate-300">{s.label}</p>
+                  <div key={s.stat} className="bg-slate-900/60 border border-slate-700 p-4 rounded text-center">
+                    <div className={`font-pressstart text-3xl md:text-4xl ${s.color} mb-2`}>{s.stat}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{s.label}</p>
                   </div>
                 ))}
               </div>
@@ -341,10 +410,10 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                 ].map((r) => (
                   <div key={r.role} className="bg-slate-900/50 border border-slate-800 p-3 rounded flex flex-col md:flex-row md:justify-between md:items-center gap-2">
                     <div>
-                      <div className="font-pressstart text-[9px] text-white">{r.role}</div>
-                      <div className="text-[8px] text-retro-dimmed font-mono mt-0.5">exp: {r.xp} · cert: {r.cert}</div>
+                      <div className="font-pressstart text-xs md:text-sm text-white">{r.role}</div>
+                      <div className="text-xs text-retro-dimmed font-mono mt-0.5">exp: {r.xp} · cert: {r.cert}</div>
                     </div>
-                    <div className="font-pressstart text-[10px] text-retro-green shrink-0">{r.salary}</div>
+                    <div className="font-pressstart text-sm md:text-base text-retro-green shrink-0">{r.salary}</div>
                   </div>
                 ))}
               </div>
@@ -361,12 +430,12 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { cert: 'ICP-ACC', org: 'ICAgile', cost: 'Variável', desc: 'Para Agile Coaches. Reconhecida internacionalmente em coaching de times.' },
                 ].map((c) => (
                   <div key={c.cert} className="bg-slate-900/50 border border-slate-700 p-3 rounded">
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="font-pressstart text-[9px] text-retro-accent">{c.cert}</span>
-                      <span className="text-[8px] text-retro-dimmed font-mono">{c.cost}</span>
+                    <div className="flex flex-wrap justify-between gap-1 mb-1">
+                      <span className="font-pressstart text-xs md:text-sm text-retro-accent">{c.cert}</span>
+                      <span className="text-xs text-retro-dimmed font-mono">{c.cost}</span>
                     </div>
-                    <div className="text-[8px] text-retro-dimmed mb-1">Emissora: {c.org}</div>
-                    <p className="text-[9px] font-sans text-slate-300">{c.desc}</p>
+                    <div className="text-xs text-retro-dimmed mb-1">Emissora: {c.org}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{c.desc}</p>
                   </div>
                 ))}
               </div>
@@ -374,17 +443,17 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
           </div>
         )}
 
-        {/* ═══════════════════ COMO SER UM EXCELENTE GESTOR ═══════════════════ */}
+        {/* ═══════════════════ GESTOR DE TI ═══════════════════ */}
         {section === 'manager' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <RetroCard title="🏆 Como se Tornar um Excelente Gestor de TI" className="border-retro-accent">
-              <p className="text-sm font-sans text-slate-300 leading-relaxed">
+              <p className="text-sm md:text-base font-sans text-slate-300 leading-relaxed">
                 Ser um excelente Gestor de TI vai muito além de conhecer frameworks e ferramentas. Exige uma combinação de <strong className="text-retro-accent">habilidades técnicas</strong>, <strong className="text-white">inteligência emocional</strong> e <strong className="text-retro-green">visão estratégica de negócio</strong>.
               </p>
             </RetroCard>
 
             <RetroCard title="📍 Roadmap do Gestor Ágil (Passo a Passo)" className="border-retro-blue">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   {
                     step: '1', phase: 'FUNDAÇÃO', color: 'border-slate-500 text-slate-300',
@@ -442,11 +511,11 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   },
                 ].map((s) => (
                   <div key={s.step} className={`border-2 ${s.color.split(' ')[0]} bg-slate-950/40 p-4 rounded`}>
-                    <div className={`font-pressstart text-[10px] ${s.color.split(' ')[1]} mb-2`}>
+                    <div className={`font-pressstart text-xs md:text-sm ${s.color.split(' ')[1]} mb-3`}>
                       FASE {s.step}: {s.phase}
                     </div>
-                    <ul className="list-disc pl-4 space-y-1">
-                      {s.items.map((i) => <li key={i} className="text-[9px] font-sans text-slate-300">{i}</li>)}
+                    <ul className="list-disc pl-5 space-y-2">
+                      {s.items.map((i) => <li key={i} className="text-sm md:text-base font-sans text-slate-300">{i}</li>)}
                     </ul>
                   </div>
                 ))}
@@ -464,9 +533,9 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   { book: 'Inspired', author: 'Marty Cagan', why: 'Como os melhores PMs constroem produtos que as pessoas amam.' },
                 ].map((b) => (
                   <div key={b.book} className="bg-slate-900/50 border border-slate-800 p-3 rounded">
-                    <div className="font-pressstart text-[9px] text-white mb-0.5">📖 {b.book}</div>
-                    <div className="text-[8px] text-retro-dimmed font-mono mb-1">por {b.author}</div>
-                    <p className="text-[9px] font-sans text-slate-300">{b.why}</p>
+                    <div className="font-pressstart text-xs md:text-sm text-white mb-1">📖 {b.book}</div>
+                    <div className="text-xs text-retro-dimmed font-mono mb-1">por {b.author}</div>
+                    <p className="text-sm md:text-base font-sans text-slate-300">{b.why}</p>
                   </div>
                 ))}
               </div>
@@ -486,14 +555,15 @@ export const AgileLearningPage: React.FC<AgileLearningPageProps> = ({ onBack }) 
                   '🌍 Pensa no usuário final — cada decisão técnica tem impacto humano',
                   '🚀 Continua aprendendo — o mercado muda, o excelente gestor muda junto',
                 ].map((b) => (
-                  <div key={b} className="flex items-start gap-2 bg-slate-900/40 p-2 rounded border border-slate-800">
-                    <p className="text-[10px] font-sans text-slate-300">{b}</p>
+                  <div key={b} className="flex items-start gap-3 bg-slate-900/40 p-3 rounded border border-slate-800">
+                    <p className="text-sm md:text-base font-sans text-slate-300">{b}</p>
                   </div>
                 ))}
               </div>
             </RetroCard>
           </div>
         )}
+
       </div>
     </div>
   );
