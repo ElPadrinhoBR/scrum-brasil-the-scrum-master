@@ -11,6 +11,10 @@ export interface DialogueChoice {
   };
   nextDialogueIndex?: number; // Index to jump to, if any
   reactionText?: string;     // Brief reaction from narrator/speaker
+  feedback?: {
+    rating: 'BOM' | 'MEDIANO' | 'RUIM';
+    explanation: string;
+  };
 }
 
 export interface DialogueLine {
@@ -84,7 +88,11 @@ export const SPRINTS_DATA: SprintDefinition[] = [
               xp: 20
             },
             nextDialogueIndex: 4,
-            reactionText: "Excelente! Você agiu como facilitador. Carlos e Ana concordam em focar primeiro na modelagem sem exagerar no overengineering."
+            reactionText: "Excelente! Você agiu como facilitador. Carlos e Ana concordam em focar primeiro na modelagem sem exagerar no overengineering.",
+            feedback: {
+              rating: 'BOM',
+              explanation: 'Excelente postura de facilitador. O Scrum Master não deve impor decisões, mas ajudar a equipe a colaborar e encontrar um meio-termo sustentável entre negócio (PO) e engenharia (Developers).'
+            }
           },
           {
             text: "Ficar do lado de Carlos: 'Ele está certo. Qualidade técnica não pode ser negociada. Vamos atrasar o MVP.'",
@@ -97,7 +105,11 @@ export const SPRINTS_DATA: SprintDefinition[] = [
               xp: 10
             },
             nextDialogueIndex: 4,
-            reactionText: "Carlos agradece a defesa de sua integridade técnica, mas Ana bufa de frustração, sentindo-se ignorada."
+            reactionText: "Carlos agradece a defesa de sua integridade técnica, mas Ana bufa de frustração, sentindo-se ignorada.",
+            feedback: {
+              rating: 'MEDIANO',
+              explanation: 'Embora apoiar a excelência técnica seja louvável, ignorar completamente os prazos e pressões do negócio de forma radical gera atritos severos com a PO e isola o time técnico.'
+            }
           },
           {
             text: "Ficar do lado de Ana: 'Temos prazos, Carlos. Faça o código funcionar rápido, depois a gente arruma.'",
@@ -110,7 +122,11 @@ export const SPRINTS_DATA: SprintDefinition[] = [
               xp: 10
             },
             nextDialogueIndex: 4,
-            reactionText: "Ana sorri satisfeita, mas Carlos cruza os braços e faz cara feia. Você gerou dívida técnica imediata."
+            reactionText: "Ana sorri satisfeita, mas Carlos cruza os braços e faz cara feia. Você gerou dívida técnica imediata.",
+            feedback: {
+              rating: 'RUIM',
+              explanation: 'Impor pressões de entrega rápida e ignorar a sustentabilidade técnica desmotiva a equipe e acumula bugs graves. O papel do SM é defender o ritmo sustentável do time.'
+            }
           }
         ]
       },
@@ -133,7 +149,11 @@ export const SPRINTS_DATA: SprintDefinition[] = [
               xp: 15,
               flags: { protectedSprintGoal: true }
             },
-            reactionText: "O time se sente alinhado e o objetivo da Sprint é oficialmente fechado!"
+            reactionText: "O time se sente alinhado e o objetivo da Sprint é oficialmente fechado!",
+            feedback: {
+              rating: 'BOM',
+              explanation: 'Excelente. O Sprint Goal deve ser focado, realista e co-criado pela equipe. Proteger o time de sobrecarga logo no início constrói confiança e foco.'
+            }
           },
           {
             text: "Adicionar mais tarefas de última hora solicitadas pela diretoria: 'Vamos aproveitar e fazer o painel administrativo também!'",
@@ -146,7 +166,11 @@ export const SPRINTS_DATA: SprintDefinition[] = [
               xp: 5,
               flags: { overloadedSprintGoal: true }
             },
-            reactionText: "O time aceita sob protestos, sentindo-se sobrecarregado logo no primeiro dia."
+            reactionText: "O time aceita sob protestos, sentindo-se sobrecarregado logo no primeiro dia.",
+            feedback: {
+              rating: 'RUIM',
+              explanation: 'Sobrecarregar o time com escopo extra na Planning para agradar stakeholders viola a autonomia do time e sabota a qualidade do MVP, elevando o risco de atraso.'
+            }
           }
         ]
       }

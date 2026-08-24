@@ -18,6 +18,12 @@ export const HUD: React.FC<HUDProps> = ({
   const { sprint, xp, level, stats, currentSprintGoal, phase } = state;
   const xpNeeded = getRequiredXPForLevel(level);
 
+  // Time tracker logic: 8 Sprints total, each Sprint is 2 weeks (10 working days). Total 80 days.
+  const elapsedDays = (sprint - 1) * 10 + (phase === 'DEVELOPMENT' ? (state.day - 1) * 3 : (phase === 'REVIEW' || phase === 'RETROSPECTIVE' ? 10 : 0));
+  const remainingDays = Math.max(0, 80 - elapsedDays);
+  const weeksLeft = Math.floor(remainingDays / 5);
+  const daysLeft = remainingDays % 5;
+
   // Helper to draw text progress bar
   const renderTextBar = (val: number, isRisk = false) => {
     const totalBlocks = 10;
@@ -49,13 +55,24 @@ export const HUD: React.FC<HUDProps> = ({
     <div className="border-4 border-retro-border bg-retro-panel p-4 shadow-retro mb-4">
       {/* Top row: Sprint, Level, Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b-4 border-retro-border gap-4">
-        {/* Sprint Goal & Title */}
-        <div>
-          <div className="font-pressstart text-[14px] text-retro-accent">
-            SPRINT {sprint.toString().padStart(2, '0')} / 08
+        {/* Sprint Goal & Title and Countdown */}
+        <div className="flex flex-wrap items-center gap-4">
+          <div>
+            <div className="font-pressstart text-[14px] text-retro-accent">
+              SPRINT {sprint.toString().padStart(2, '0')} / 08
+            </div>
+            <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
+              Status: <span className="text-white">{phase}</span>
+            </div>
           </div>
-          <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
-            Status: <span className="text-white">{phase}</span>
+
+          <div className="border-l-4 border-dashed border-slate-800 pl-4">
+            <div className="font-pressstart text-[9px] text-retro-red uppercase">
+              📅 PRAZO: 16 SEMANAS
+            </div>
+            <div className="text-[9px] text-white mt-1 font-pressstart uppercase">
+              FALTAM: <span className="text-retro-accent">{weeksLeft} SEMANAS {daysLeft > 0 ? `E ${daysLeft} DIAS` : ''}</span>
+            </div>
           </div>
         </div>
 

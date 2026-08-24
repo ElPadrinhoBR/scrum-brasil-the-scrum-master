@@ -17,6 +17,10 @@ export const GameScreen: React.FC = () => {
     if (phase === 'INTRO' || phase === 'PLANNING') {
       return currentSprintDef.planningDialogues;
     } else if (phase === 'DEVELOPMENT') {
+      const completedKey = `daily_event_${sprint}_${state.day}_completed`;
+      if (state.flags[completedKey]) {
+        return [];
+      }
       return currentSprintDef.dailyEvents[state.day] || [];
     } else if (phase === 'REVIEW') {
       return currentSprintDef.reviewDialogues;

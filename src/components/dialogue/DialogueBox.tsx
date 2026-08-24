@@ -30,6 +30,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   const [isTyping, setIsTyping] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null);
+  const [pendingChoiceFeedback, setPendingChoiceFeedback] = useState<DialogueChoice | null>(null);
   const textTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Format text by replacing the playerName placeholder
@@ -148,10 +149,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
       {/* Main Dialogue Box */}
       <div className="bg-retro-panel border-4 border-retro-border p-5 pt-7 shadow-retro min-h-[160px] flex flex-col justify-between">
-        {/* Dialogue text */}
+        {/* Dialogue text - Increased font sizes */}
         <div 
           onClick={handleSkipOrAdvance}
-          className="text-xs md:text-sm font-sans tracking-wide leading-relaxed cursor-pointer select-none grow min-h-[60px]"
+          className="text-sm md:text-base font-sans tracking-wide leading-relaxed cursor-pointer select-none grow min-h-[60px]"
         >
           {isTyping ? (
             <span className="cursor-blink">{displayedText}</span>
@@ -183,7 +184,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             )}
           </div>
 
-          {/* Choices Rendering */}
+          {/* Choices Rendering - Slightly increased font size */}
           <div className="w-full md:w-auto flex flex-col md:items-end gap-2">
             {choices.length > 0 ? (
               <div className="flex flex-col gap-2 w-full max-w-xl">
@@ -197,9 +198,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                       disabled={!skillMet}
                       onClick={() => {
                         SoundManager.playClick();
-                        onChoiceSelect(choice);
+                        if (choice.feedback) {
+                          setPendingChoiceFeedback(choice);
+                        } else {
+                          onChoiceSelect(choice);
+                        }
                       }}
-                      className={`text-left border-2 p-2.5 text-xs font-sans tracking-wide leading-tight transition-all relative ${
+                      className={`text-left border-2 p-2.5 text-xs md:text-sm font-sans tracking-wide leading-tight transition-all relative ${
                         skillMet
                           ? 'border-retro-border bg-[#131326] hover:border-retro-accent text-white active:translate-x-[2px] active:translate-y-[2px]'
                           : 'border-slate-800 bg-[#0c0c14] text-slate-600 cursor-not-allowed opacity-60'
@@ -234,6 +239,54 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Choice Evaluation Feedback Modal */}
+      {pendingChoiceFeedback && pendingChoiceFeedback.feedback && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[70]">
+          <div className="bg-retro-panel border-4 border-retro-border p-6 shadow-retro-lg max-w-lg w-full text-left">
+            <h4 className="font-pressstart text-[10px] text-retro-accent uppercase tracking-wider mb-4 border-b-2 border-slate-800 pb-2">
+              📊 AVALIAÇÃO DA SUA DECISÃO
+            </h4>
+            
+            <div className="mb-4">
+              {pendingChoiceFeedback.feedback.rating === 'BOM' && (
+                <div className="bg-green-950/40 border-2 border-retro-green p-3 text-retro-green font-pressstart text-[9px] uppercase flex items-center space-x-2">
+                  <span>⭐ EXCELENTE DECISÃO (BOM)</span>
+                </div>
+              )}
+              {pendingChoiceFeedback.feedback.rating === 'MEDIANO' && (
+                <div className="bg-yellow-950/40 border-2 border-retro-yellow p-3 text-retro-yellow font-pressstart text-[9px] uppercase flex items-center space-x-2">
+                  <span>⚠️ DECISÃO RAZOÁVEL (MEDIANO)</span>
+                </div>
+              )}
+              {pendingChoiceFeedback.feedback.rating === 'RUIM' && (
+                <div className="bg-red-950/40 border-2 border-retro-red p-3 text-retro-red font-pressstart text-[9px] uppercase flex items-center space-x-2">
+                  <span>❌ DECISÃO INADEQUADA (RUIM)</span>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-[#131326] p-4 border-2 border-retro-border text-sm font-sans leading-relaxed text-slate-200 mb-6">
+              <p className="font-semibold text-white mb-2 font-mono text-xs text-retro-accent">Explicação Metodológica:</p>
+              <p>{pendingChoiceFeedback.feedback.explanation.replace(/{playerName}/g, playerName)}</p>
+            </div>
+
+            <div className="flex justify-end">
+              <RetroButton 
+                variant="success" 
+                onClick={() => {
+                  SoundManager.playClick();
+                  onChoiceSelect(pendingChoiceFeedback!);
+                  setPendingChoiceFeedback(null);
+                }}
+                className="w-full md:w-auto uppercase text-xs"
+              >
+                Entendido (Continuar)
+              </RetroButton>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Glossary Term modal */}
       {selectedTerm && (

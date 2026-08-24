@@ -197,10 +197,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setActiveTab('board');
       } else if (state.phase === 'DEVELOPMENT') {
         // Daily dialog ended. Board is now ready for simulation click!
+        const completedKey = `daily_event_${state.sprint}_${state.day}_completed`;
         saveState({
           ...state,
           dialogueIndex: 0,
-          dialogueHistory: []
+          dialogueHistory: [],
+          flags: { ...state.flags, [completedKey]: true }
         });
         setActiveTab('board');
       } else if (state.phase === 'REVIEW') {
@@ -348,10 +350,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         setActiveTab('board');
       } else if (state.phase === 'DEVELOPMENT') {
+        const completedKey = `daily_event_${state.sprint}_${state.day}_completed`;
         saveState({
           ...nextState,
           dialogueIndex: 0,
-          dialogueHistory: []
+          dialogueHistory: [],
+          flags: { ...nextState.flags, [completedKey]: true }
         });
         setActiveTab('board');
       } else {
