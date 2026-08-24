@@ -1,6 +1,7 @@
 import React from 'react';
 import { GameState, getLevelName, getRequiredXPForLevel } from '../../game/GameState';
 import { RetroButton } from '../ui/RetroButton';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface HUDProps {
   state: GameState;
@@ -17,6 +18,7 @@ export const HUD: React.FC<HUDProps> = ({
 }) => {
   const { sprint, xp, level, stats, currentSprintGoal, phase } = state;
   const xpNeeded = getRequiredXPForLevel(level);
+  const { t } = useLanguage();
 
   // Time tracker logic: 8 Sprints total, each Sprint is 2 weeks (10 working days). Total 80 days.
   const elapsedDays = (sprint - 1) * 10 + (phase === 'DEVELOPMENT' ? (state.day - 1) * 3 : (phase === 'REVIEW' || phase === 'RETROSPECTIVE' ? 10 : 0));
@@ -61,19 +63,19 @@ export const HUD: React.FC<HUDProps> = ({
             {state.gameMode === 'sandbox' ? (
               <>
                 <div className="font-pressstart text-[14px] text-retro-purple">
-                  SPRINT {sprint.toString().padStart(2, '0')} / ♾️
+                  {t.hud.sprint} {sprint.toString().padStart(2, '0')} {t.hud.of} ♾️
                 </div>
                 <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
-                  Status: <span className="text-white">{phase}</span>
+                  {t.hud.status}: <span className="text-white">{phase}</span>
                 </div>
               </>
             ) : (
               <>
                 <div className="font-pressstart text-[14px] text-retro-accent">
-                  SPRINT {sprint.toString().padStart(2, '0')} / 08
+                  {t.hud.sprint} {sprint.toString().padStart(2, '0')} {t.hud.of} 08
                 </div>
                 <div className="text-[10px] text-retro-dimmed mt-1 font-pressstart uppercase">
-                  Status: <span className="text-white">{phase}</span>
+                  {t.hud.status}: <span className="text-white">{phase}</span>
                 </div>
               </>
             )}
@@ -83,19 +85,19 @@ export const HUD: React.FC<HUDProps> = ({
             {state.gameMode === 'sandbox' ? (
               <>
                 <div className="font-pressstart text-[9px] text-retro-purple uppercase">
-                  ♾️ MODO SANDBOX
+                  {t.hud.sandboxMode}
                 </div>
                 <div className="text-[9px] text-white mt-1 font-pressstart uppercase">
-                  SPRINTS: <span className="text-retro-purple">ILIMITADAS</span>
+                  {t.hud.sandboxSprints}
                 </div>
               </>
             ) : (
               <>
                 <div className="font-pressstart text-[9px] text-retro-red uppercase">
-                  📅 PRAZO: 16 SEMANAS
+                  {t.hud.deadline}
                 </div>
                 <div className="text-[9px] text-white mt-1 font-pressstart uppercase">
-                  FALTAM: <span className="text-retro-accent">{weeksLeft} SEMANAS {daysLeft > 0 ? `E ${daysLeft} DIAS` : ''}</span>
+                  {t.hud.remaining}: <span className="text-retro-accent">{weeksLeft} {t.hud.weeks} {daysLeft > 0 ? `E ${daysLeft} ${t.hud.days}` : ''}</span>
                 </div>
               </>
             )}
@@ -105,7 +107,7 @@ export const HUD: React.FC<HUDProps> = ({
         {/* Level and XP */}
         <div className="flex-1 md:mx-6 bg-[#131326] p-2 border-2 border-retro-border flex flex-col md:flex-row md:items-center justify-between gap-2">
           <div className="flex flex-col">
-            <span className="text-[9px] text-retro-accent font-pressstart uppercase">XP: {xp} / {xpNeeded}</span>
+            <span className="text-[9px] text-retro-accent font-pressstart uppercase">{t.hud.xp}: {xp} / {xpNeeded}</span>
             <span className="text-[10px] font-pressstart truncate text-white">{getLevelName(level)}</span>
           </div>
           {/* XP Bar */}
@@ -123,25 +125,25 @@ export const HUD: React.FC<HUDProps> = ({
             variant={activeTab === 'game' ? 'warning' : 'secondary'} 
             onClick={() => setActiveTab('game')}
           >
-            💬 História
+            {t.hud.story}
           </RetroButton>
           <RetroButton 
             variant={activeTab === 'board' ? 'warning' : 'secondary'} 
             onClick={() => setActiveTab('board')}
           >
-            📋 Kanban
+            {t.hud.board}
           </RetroButton>
           <RetroButton 
             variant={activeTab === 'team' ? 'warning' : 'secondary'} 
             onClick={() => setActiveTab('team')}
           >
-            👥 Equipe
+            {t.hud.team}
           </RetroButton>
           <RetroButton 
             variant="danger" 
             onClick={onExit}
           >
-            ❌ Menu
+            {t.hud.exit}
           </RetroButton>
         </div>
       </div>
@@ -177,7 +179,7 @@ export const HUD: React.FC<HUDProps> = ({
       {/* Sprint Goal banner */}
       {currentSprintGoal && (
         <div className="pt-2 text-[10px] flex items-center bg-[#131326] px-2 py-1.5 border border-dashed border-retro-border">
-          <span className="font-pressstart text-retro-accent mr-2">META DA SPRINT:</span>
+          <span className="font-pressstart text-retro-accent mr-2">{t.hud.sprintGoal}:</span>
           <span className="text-white italic">"{currentSprintGoal}"</span>
         </div>
       )}

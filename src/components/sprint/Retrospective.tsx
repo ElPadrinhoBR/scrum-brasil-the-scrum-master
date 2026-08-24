@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { RetroCard } from '../ui/RetroCard';
 import { RetroButton } from '../ui/RetroButton';
 import { SoundManager } from '../ui/SoundManager';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 interface RetrospectiveProps {
   sprintNumber: number;
@@ -15,6 +16,7 @@ export const Retrospective: React.FC<RetrospectiveProps> = ({
   unlockedSkills,
 }) => {
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   // Retro items based on sprint index
   const getRetroComments = (sprint: number) => {
@@ -103,17 +105,17 @@ export const Retrospective: React.FC<RetrospectiveProps> = ({
     <div className="w-full flex flex-col space-y-6">
       <div className="text-center">
         <h2 className="font-pressstart text-sm text-retro-accent uppercase">
-          Sprint Retrospective — Inspecionar e Adaptar
+          {t.retro.title}
         </h2>
         <p className="text-[10px] text-retro-dimmed mt-1">
-          O Scrum Team avalia o processo e define uma ação concreta de melhoria para o ciclo seguinte.
+          {t.retro.subtitle}
         </p>
       </div>
 
       {/* Retro columns grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* What went well */}
-        <RetroCard title="🟢 O que funcionou bem?" className="border-green-600 bg-[#0d2218]/45">
+        <RetroCard title={t.retro.wentWell} className="border-green-600 bg-[#0d2218]/45">
           <ul className="list-disc pl-4 space-y-2 text-[10.5px] font-sans text-green-200">
             {comments.good.map((c, i) => (
               <li key={i}>{c}</li>
@@ -122,7 +124,7 @@ export const Retrospective: React.FC<RetrospectiveProps> = ({
         </RetroCard>
 
         {/* What didn't go well */}
-        <RetroCard title="🔴 O que não funcionou?" className="border-red-600 bg-[#2b1010]/45">
+        <RetroCard title={t.retro.didntWork} className="border-red-600 bg-[#2b1010]/45">
           <ul className="list-disc pl-4 space-y-2 text-[10.5px] font-sans text-red-200">
             {comments.bad.map((c, i) => (
               <li key={i}>{c}</li>
@@ -131,9 +133,9 @@ export const Retrospective: React.FC<RetrospectiveProps> = ({
         </RetroCard>
 
         {/* Action Items selection */}
-        <RetroCard title="⚡ O que vamos melhorar?" className="border-retro-blue bg-[#0c1326]/45">
+        <RetroCard title={t.retro.improve} className="border-retro-blue bg-[#0c1326]/45">
           <p className="text-[10px] font-sans text-retro-dimmed mb-3">
-            Selecione uma ação de melhoria para a equipe aplicar na Sprint seguinte:
+            {t.retro.improvePrompt}
           </p>
           <div className="flex flex-col gap-2 max-h-[250px] overflow-y-auto pr-1">
             {improvements.map((imp) => (
@@ -165,9 +167,10 @@ export const Retrospective: React.FC<RetrospectiveProps> = ({
           onClick={handleConfirm}
           className="w-full md:w-64"
         >
-          Confirmar Melhoria
+          {t.retro.confirm}
         </RetroButton>
       </div>
     </div>
   );
 };
+

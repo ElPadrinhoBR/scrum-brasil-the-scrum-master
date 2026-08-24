@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GameProvider, useGame } from './game/GameContext';
+import { LanguageProvider } from './i18n/LanguageContext';
 import { MainMenu } from './pages/MainMenu';
 import { HUD } from './components/hud/HUD';
 import { GameScreen } from './pages/GameScreen';
@@ -16,15 +17,7 @@ const GameShell: React.FC<{ onBackToMenu: () => void }> = ({ onBackToMenu }) => 
 
   return (
     <div className="min-h-screen bg-retro-bg text-retro-text p-4 md:p-6 select-none max-w-7xl mx-auto flex flex-col">
-      {/* Heads Up Display (HUD) */}
-      <HUD 
-        state={state} 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onExit={onBackToMenu} 
-      />
-
-      {/* Main viewport render based on active tab selection */}
+      <HUD state={state} activeTab={activeTab} setActiveTab={setActiveTab} onExit={onBackToMenu} />
       <main className="grow flex flex-col bg-slate-950/20 border-2 border-slate-900 rounded-lg p-2 md:p-4 min-h-[500px]">
         {activeTab === 'game' && <GameScreen />}
         {activeTab === 'board' && <SprintBoardPage />}
@@ -38,13 +31,15 @@ export const App: React.FC = () => {
   const [gameStarted, setGameStarted] = useState(false);
 
   return (
-    <GameProvider>
-      {gameStarted ? (
-        <GameShell onBackToMenu={() => setGameStarted(false)} />
-      ) : (
-        <MainMenu onStartGame={() => setGameStarted(true)} />
-      )}
-    </GameProvider>
+    <LanguageProvider>
+      <GameProvider>
+        {gameStarted ? (
+          <GameShell onBackToMenu={() => setGameStarted(false)} />
+        ) : (
+          <MainMenu onStartGame={() => setGameStarted(true)} />
+        )}
+      </GameProvider>
+    </LanguageProvider>
   );
 };
 
