@@ -175,7 +175,7 @@ export const GameScreen: React.FC = () => {
           {currentLine.speaker !== 'NARRADOR' && 
            currentLine.speaker !== 'SISTEMA' && 
            currentLine.speaker !== 'VOCÊ — SCRUM MASTER' && (
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center animate-bounce" style={{ animationDuration: '3s' }}>
+            <div className="absolute bottom-0 left-10 md:left-20 z-10 flex flex-col items-center animate-bounce" style={{ animationDuration: '3s' }}>
               <PixelCharacter 
                 characterId={currentLine.speaker} 
                 expression={currentLine.expression || 'neutral'} 

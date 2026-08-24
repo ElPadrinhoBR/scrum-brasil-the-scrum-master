@@ -16,6 +16,7 @@ interface GameContextType {
   loadSavedGame: () => boolean;
   advanceDialogueLine: () => void;
   selectDialogueChoice: (choice: DialogueChoice) => void;
+  startDevelopmentPhase: () => void;
   assignDeveloperToStory: (storyId: string, memberId: string | null) => void;
   simulateActiveDayProgress: () => void;
   finishSprintReview: () => void;
@@ -182,11 +183,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ...state,
           phase: 'PLANNING',
           dialogueIndex: 0,
-          dialogueHistory: [{ 
-            speaker: sprintDef.planningDialogues[0].speaker, 
-            text: sprintDef.planningDialogues[0].text 
-          }]
+          dialogueHistory: []
         });
+        setActiveTab('board');
       } else if (state.phase === 'PLANNING') {
         // Sprints require planning assigning. Switch tab to Kanban board automatically
         saveState({
@@ -342,9 +341,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } else {
       // Choice was the last step in this dialogue block
-      if (state.phase === 'PLANNING') {
+      if (state.phase === 'INTRO' || state.phase === 'PLANNING') {
         saveState({
           ...nextState,
+          phase: 'PLANNING',
           dialogueIndex: 0,
           dialogueHistory: []
         });
@@ -366,6 +366,23 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
     }
+  };
+
+  const startDevelopmentPhase = () => {
+    const sprintDef = getCurrentSprintDef();
+    const morningDialogues = sprintDef.dailyEvents[1] || [];
+    
+    saveState({
+      ...state,
+      phase: 'DEVELOPMENT',
+      day: 1,
+      dialogueIndex: 0,
+      dialogueHistory: morningDialogues.length > 0 
+        ? [{ speaker: morningDialogues[0].speaker, text: morningDialogues[0].text }] 
+        : [],
+      flags: { ...state.flags, sprintPlanningCompleted: true }
+    });
+    setActiveTab('game');
   };
 
   const assignDeveloperToStory = (storyId: string, memberId: string | null) => {
@@ -643,6 +660,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loadSavedGame,
         advanceDialogueLine,
         selectDialogueChoice,
+        startDevelopmentPhase,
         assignDeveloperToStory,
         simulateActiveDayProgress,
         finishSprintReview,

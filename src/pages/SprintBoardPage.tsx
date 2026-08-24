@@ -5,7 +5,7 @@ import { RetroCard } from '../components/ui/RetroCard';
 import { RetroButton } from '../components/ui/RetroButton';
 
 export const SprintBoardPage: React.FC = () => {
-  const { state, assignDeveloperToStory, simulateActiveDayProgress, selectDialogueChoice, setActiveTab } = useGame();
+  const { state, assignDeveloperToStory, simulateActiveDayProgress, startDevelopmentPhase, setActiveTab } = useGame();
   const { backlog, phase, day, team } = state;
 
   const isPlanning = phase === 'PLANNING';
@@ -19,23 +19,7 @@ export const SprintBoardPage: React.FC = () => {
       return;
     }
 
-    // We update state directly
-    selectDialogueChoice({
-      text: "Iniciar o ciclo de desenvolvimento!",
-      effects: {
-        stats: {}, // no-op just to trigger state transition
-        flags: { sprintPlanningCompleted: true }
-      },
-      nextDialogueIndex: 0,
-      reactionText: "Planejamento concluído. O time começa a codificar os cards!"
-    });
-    
-    // Switch state phase to DEVELOPMENT
-    state.phase = 'DEVELOPMENT';
-    state.day = 1;
-    
-    // Force App state update through selectChoice or context mechanism
-    setActiveTab('game');
+    startDevelopmentPhase();
   };
 
   return (
