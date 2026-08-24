@@ -1,0 +1,42 @@
+INSTRUÇÕES PARA ADICIONAR IMAGENS DE FUNDO CUSTOMIZADAS
+======================================================
+
+Roberto Leandro M Corrêa, você pode substituir os desenhos programáticos (SVG) de fundo por imagens reais de pixel-art criadas por inteligências artificiais como o Gemini!
+
+O jogo está configurado com um sistema inteligente de carregamento híbrido: ele tenta carregar as imagens PNG nesta pasta e, se não encontrar, faz o fallback automático para os cenários desenhados em SVG, garantindo que o jogo nunca quebre.
+
+COMO ADICIONAR AS IMAGENS:
+--------------------------
+1. Crie ou gere suas imagens de pixel-art. Para gerar com o Gemini, use prompts em inglês para melhores resultados. Proporções recomendadas: 16:9.
+
+2. Salve as imagens nesta pasta pública exatamente com os seguintes nomes e formato (PNG):
+   - escritorio.png      (Cena do escritório da startup Nova Tech)
+   - reuniao.png         (Cena da sala de reuniões da Planning/Review/Retro)
+   - desenvolvimento.png (Cena da sala dos programadores com telas de computador)
+   - cafeteria.png       (Cena da cafeteria para mentoria/descanso)
+   - servidores.png      (Cena do rack de servidores / NOC)
+   - diretoria.png       (Cena da sala da diretoria executiva)
+
+SUGESTÕES DE PROMPTS PARA GERAR NO GEMINI:
+------------------------------------------
+Abaixo estão exemplos prontos de prompts para você copiar e colar no Gemini para gerar cenários incríveis estilo RPG indie pixel-art:
+
+- Para o Escritório:
+  > "A 16-bit retro pixel art illustration of a corporate software startup office, workstation desks, windows looking at a city skyline, cyber tech dark palette, flat colors, clean borders, 16:9 aspect ratio."
+
+- Para a Sala de Reunião:
+  > "A 16-bit retro pixel art illustration of a corporate conference meeting room, large mahogany wood table in the center, whiteboards with agile scrum flowcharts on the wall, warm dark lighting, 16:9 aspect ratio."
+
+- Para a Sala de Desenvolvimento:
+  > "A 16-bit retro pixel art illustration of a dark software developer room, neon computer terminals displaying retro lines of purple and green code, programmer desk setup, cyber game style, 16:9 aspect ratio."
+
+- Para a Cafeteria:
+  > "A 16-bit retro pixel art illustration of an office cafeteria, small espresso coffee machine on a wooden counter, high bar stools, warm cozy retro indie game style, 16:9 aspect ratio."
+
+- Para a Sala de Servidores (NOC):
+  > "A 16-bit retro pixel art illustration of a datacenter server room, tall server racks with tiny blinking neon green and red LED lights, cables neatly organized, high tech dark style, 16:9 aspect ratio."
+
+- Para a Diretoria:
+  > "A 16-bit retro pixel art illustration of a luxury corporate executive director office, high-end desk, elegant golden trims, dark professional aesthetic, indie game style, 16:9 aspect ratio."
+
+O código irá ler e injetar as fotos imediatamente! Divirta-se personalizando o seu Pixflow!
