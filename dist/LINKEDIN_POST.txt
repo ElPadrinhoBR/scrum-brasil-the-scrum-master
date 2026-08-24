@@ -1,0 +1,30 @@
+🎮 PUBLICANDO NO LINKEDIN: SCRUM BRASIL — THE SCRUM MASTER
+
+Aqui está o texto pronto para você copiar e publicar no seu perfil do LinkedIn, Roberto Leandro M Corrêa!
+
+--------------------------------------------------------------------------------
+
+🎮 Acabo de lançar meu novo projeto Open Source: "Scrum Brasil — The Scrum Master"!
+
+Decidi criar um Serious Game no formato de Visual Novel + Simulação de Gerenciamento Ágil para navegadores, onde o jogador assume exclusivamente o papel de um Scrum Master.
+
+O objetivo do jogo não é apenas testar conceitos teóricos com perguntas prontas, mas ensinar Scrum na prática, por meio de dilemas diários, negociações de escopo e qualidade, gerenciamento de estresse e motivação da equipe, e a remoção ativa de impedimentos para entregar o produto "Pixflow".
+
+🛠️ Detalhes técnicos do desenvolvimento:
+• Interface single-page moderna com estilo retro pixel-art construída em React + TypeScript.
+• Estilização pixelada fluida utilizando Tailwind CSS.
+• Efeitos de áudio retrô 8-bit de chiptune sintetizados dinamicamente via Web Audio API (sem carregamento de arquivos pesados!).
+• Sistema de avatares pixel-art gerados dinamicamente em SVG de acordo com a emoção do personagem.
+• Salvamento de progresso versionado e persistido localmente via LocalStorage.
+
+O projeto é 100% aberto e pronto para receber novas Sprints, diálogos e melhorias da comunidade de agilidade!
+
+👉 Jogue agora direto no seu navegador:
+https://elpadrinhobr.github.io/scrum-brasil-the-scrum-master/
+
+💻 Repositório público do projeto no GitHub:
+https://github.com/ElPadrinhoBR/scrum-brasil-the-scrum-master
+
+Gostaria de agradecer ao suporte técnico de IA que me auxiliou a otimizar a engine de diálogos e o pipeline de CI/CD para deploy no GitHub Pages!
+
+#Agile #ScrumMaster #ProductOwner #TypeScript #ReactJS #SeriousGames #GameDev #OpenSource #SoftwareEngineering #Agilidade #LinkedIn
