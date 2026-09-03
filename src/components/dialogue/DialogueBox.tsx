@@ -80,18 +80,30 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
   // Convert speaker ID to readable name and color
   const getSpeakerDetails = (spk: string) => {
+    const clean = spk.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+    if (clean.includes('scrum') || clean.includes('voce') || clean.includes('sm')) {
+      return { name: `${playerName} (Scrum Master)`, color: 'text-retro-accent' };
+    }
+    if (clean === 'narrador') {
+      return { name: 'NARRADOR', color: 'text-retro-dimmed italic' };
+    }
+    if (clean === 'sistema') {
+      return { name: 'SISTEMA', color: 'text-slate-400 font-bold' };
+    }
+
     const speakers: Record<string, { name: string; color: string }> = {
-      ana: { name: 'Ana (Product Owner)', color: 'text-orange-500' },
-      carlos: { name: 'Carlos (Developer)', color: 'text-green-500' },
-      julia: { name: 'Júlia (Developer)', color: 'text-purple-500' },
-      marcos: { name: 'Marcos (QA)', color: 'text-red-500' },
-      beatriz: { name: 'Beatriz (UX/UI)', color: 'text-yellow-500' },
-      rafael: { name: 'Rafael (DevOps)', color: 'text-blue-500' },
-      'VOCÊ — SCRUM MASTER': { name: `${playerName} (Scrum Master)`, color: 'text-retro-accent' },
-      SISTEMA: { name: 'SISTEMA', color: 'text-slate-400 font-bold' },
-      NARRADOR: { name: 'NARRADOR', color: 'text-retro-dimmed italic' },
+      ana: { name: 'Ana (Product Owner)', color: 'text-orange-400' },
+      carlos: { name: 'Carlos (Developer)', color: 'text-emerald-400' },
+      julia: { name: 'Júlia (Developer)', color: 'text-purple-400' },
+      marcos: { name: 'Marcos (QA)', color: 'text-rose-400' },
+      beatriz: { name: 'Beatriz (UX/UI)', color: 'text-amber-400' },
+      rafael: { name: 'Rafael (DevOps)', color: 'text-cyan-400' },
+      roberto: { name: 'Roberto (Scrum Master)', color: 'text-retro-accent' },
+      mariana: { name: 'Mariana (Scrum Master)', color: 'text-pink-400' },
     };
-    return speakers[spk] || { name: spk, color: 'text-white' };
+
+    return speakers[clean] || { name: spk, color: 'text-white' };
   };
 
   const details = getSpeakerDetails(speaker);

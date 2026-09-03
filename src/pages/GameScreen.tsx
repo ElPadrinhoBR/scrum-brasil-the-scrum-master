@@ -650,14 +650,15 @@ export const GameScreen: React.FC = () => {
 
           {/* Foreground Speaker Sprite */}
           {currentLine.speaker !== 'NARRADOR' && 
-           currentLine.speaker !== 'SISTEMA' && 
-           currentLine.speaker !== 'VOCÊ — SCRUM MASTER' && (
+           currentLine.speaker !== 'SISTEMA' && (
             <div className="absolute bottom-0 left-10 md:left-20 z-10 flex flex-col items-center animate-bounce" style={{ animationDuration: '3s' }}>
               <PixelCharacter 
                 characterId={currentLine.speaker} 
                 expression={currentLine.expression || 'neutral'} 
                 size={160} 
                 className="border-0 shadow-none bg-transparent"
+                playerAvatar={state.playerAvatar}
+                companyId={state.selectedCompanyId}
               />
             </div>
           )}
