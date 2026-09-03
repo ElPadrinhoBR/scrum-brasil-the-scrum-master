@@ -4,13 +4,13 @@ import { PixelCharacter } from '../components/characters/PixelCharacter';
 import { DialogueBox } from '../components/dialogue/DialogueBox';
 import { Retrospective } from '../components/sprint/Retrospective';
 import { RetroCard } from '../components/ui/RetroCard';
-import { SPRINTS_DATA } from '../data/sprints';
 
 export const GameScreen: React.FC = () => {
-  const { state, advanceDialogueLine, selectDialogueChoice, selectRetrospectiveImprovement } = useGame();
+  const { state, advanceDialogueLine, selectDialogueChoice, selectRetrospectiveImprovement, getCurrentSprintDef } = useGame();
   const { sprint, phase, dialogueIndex, dialogueHistory, unlockedSkills } = state;
 
-  const currentSprintDef = SPRINTS_DATA[sprint - 1] || SPRINTS_DATA[0];
+  // Always resolves to the correct company's sprint — NOT hardcoded to SPRINTS_DATA
+  const currentSprintDef = getCurrentSprintDef();
   
   // Choose dialog array based on active phase
   const getActiveDialogues = () => {

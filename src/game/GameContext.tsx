@@ -34,6 +34,8 @@ interface GameContextType {
   unlockPlayerSkill: (skillId: string, cost: number) => boolean;
   talkToTeamMember: (memberId: string) => void; // Unlocked by coaching skill
   hasSaveGame: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  getCurrentSprintDef: () => any;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -795,8 +797,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Campaign: game over after 8 sprints
       nextPhase = 'RESULTS';
     } else {
-      // Campaign: load next fixed sprint
-      const nextSprintDef = SPRINTS_DATA[nextSprint - 1];
+      // Campaign: load next sprint — prefer company campaign, fallback to Novatech SPRINTS_DATA
+      let nextSprintDef;
+      if (state.selectedCompanyId && COMPANY_CAMPAIGNS[state.selectedCompanyId]) {
+        const campaign = COMPANY_CAMPAIGNS[state.selectedCompanyId];
+        nextSprintDef = campaign.sprints[nextSprint - 1] || campaign.sprints[campaign.sprints.length - 1];
+      }
+      if (!nextSprintDef) {
+        nextSprintDef = SPRINTS_DATA[nextSprint - 1] || SPRINTS_DATA[SPRINTS_DATA.length - 1];
+      }
       nextStories = JSON.parse(JSON.stringify(nextSprintDef.stories));
       nextGoal = nextSprintDef.goal;
       nextDialogs = [{ speaker: nextSprintDef.planningDialogues[0].speaker, text: nextSprintDef.planningDialogues[0].text }];
@@ -906,6 +915,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unlockPlayerSkill,
         talkToTeamMember,
         hasSaveGame,
+        getCurrentSprintDef,
       }}
     >
       {children}
