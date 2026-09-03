@@ -73,10 +73,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onAIMode }) => 
   };
 
   const handleCompanyConfirm = () => {
-    if (selectedCompany !== 'novatech') {
-      alert("ℹ️ Esta empresa faz parte das expansões futuras! Por enquanto, você jogará a campanha completa com a Novatech (Pixflow).");
-      setSelectedCompany('novatech');
-    }
+    setSelectedCompany(inspectedCompany.id);
     setView('mode_select');
   };
 
@@ -387,9 +384,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onAIMode }) => 
               <RetroButton
                 variant="success"
                 onClick={handleCompanyConfirm}
-                className="py-2.5 uppercase w-full font-pressstart"
+                className="py-2.5 uppercase w-full font-pressstart truncate"
               >
-                Avançar com a Novatech ▶
+                Avançar com {inspectedCompany.name.split(' ')[0]} ▶
               </RetroButton>
             </div>
           </RetroCard>
@@ -403,7 +400,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStartGame, onAIMode }) => 
                 Passo 4 de 4: Escolha a modalidade
               </span>
               <p className="text-xs font-sans text-white mt-1">
-                Scrum Master: <strong className="text-retro-accent">{nameInput}</strong> ({selectedAvatar === 'mariana' ? 'Mariana' : 'Roberto'}) · Empresa: <strong className="text-retro-purple">Novatech</strong>
+                Scrum Master: <strong className="text-retro-accent">{nameInput}</strong> ({selectedAvatar === 'mariana' ? 'Mariana' : 'Roberto'}) · Empresa: <strong className="text-retro-purple">{COMPANIES_DATA.find(c => c.id === selectedCompany)?.name || 'Novatech'}</strong>
               </p>
             </div>
 

@@ -6,6 +6,7 @@ import { CHARACTERS_DATA } from '../data/characters';
 import { ACHIEVEMENTS_DATA } from '../data/achievements';
 import { SoundManager } from '../components/ui/SoundManager';
 import { SandboxGenerator } from './SandboxGenerator';
+import { COMPANY_CAMPAIGNS } from '../data/companyStories';
 
 interface GameContextType {
   state: GameState;
@@ -79,14 +80,23 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     freshState.recentMetricDeltas = {};
 
     if (freshState.gameMode === 'sandbox') {
-      const initialGoal = "Estruturar o MVP do Pixflow (Sandbox)";
+      const initialGoal = "Estruturar o MVP (Sandbox)";
       freshState.backlog = SandboxGenerator.generateStories(1);
       freshState.currentSprintGoal = initialGoal;
       freshState.phase = 'PLANNING';
       freshState.dialogueIndex = 0;
       freshState.sandboxDialogues = SandboxGenerator.generatePlanningDialogue(1, initialGoal);
+    } else if (freshState.selectedCompanyId && COMPANY_CAMPAIGNS[freshState.selectedCompanyId]) {
+      // Carrega a campanha da empresa selecionada
+      const campaign = COMPANY_CAMPAIGNS[freshState.selectedCompanyId];
+      const firstSprint = campaign.sprints[0];
+      freshState.backlog = JSON.parse(JSON.stringify(firstSprint.stories));
+      freshState.currentSprintGoal = firstSprint.goal;
+      freshState.phase = 'INTRO';
+      freshState.dialogueIndex = 0;
+      freshState.sandboxDialogues = [];
     } else {
-      // Load Sprint 1 stories and planning dialogs
+      // Load Sprint 1 stories and planning dialogs (Novatech padrão)
       const firstSprint = SPRINTS_DATA[0];
       freshState.backlog = JSON.parse(JSON.stringify(firstSprint.stories));
       freshState.currentSprintGoal = firstSprint.goal;
@@ -173,6 +183,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getCurrentSprintDef = () => {
+    if (state.selectedCompanyId && COMPANY_CAMPAIGNS[state.selectedCompanyId]) {
+      const campaign = COMPANY_CAMPAIGNS[state.selectedCompanyId];
+      const sp = campaign.sprints[state.sprint - 1] || campaign.sprints[0];
+      if (sp) return sp as unknown as typeof SPRINTS_DATA[0];
+    }
     return SPRINTS_DATA[state.sprint - 1] || SPRINTS_DATA[0];
   };
 

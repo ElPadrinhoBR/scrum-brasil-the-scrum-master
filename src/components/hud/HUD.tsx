@@ -2,6 +2,7 @@ import React from 'react';
 import { GameState, getLevelName, getRequiredXPForLevel } from '../../game/GameState';
 import { RetroButton } from '../ui/RetroButton';
 import { useLanguage } from '../../i18n/LanguageContext';
+import { COMPANIES_DATA } from '../../data/companies';
 
 interface HUDProps {
   state: GameState;
@@ -109,7 +110,7 @@ export const HUD: React.FC<HUDProps> = ({
               </span>
             </div>
             <div className="text-[8px] font-mono text-retro-dimmed mt-0.5">
-              Empresa: <strong className="text-slate-300">Novatech</strong> (Pixflow)
+              Empresa: <strong className="text-slate-300">{COMPANIES_DATA.find(c => c.id === state.selectedCompanyId)?.name || 'Novatech'}</strong> ({COMPANIES_DATA.find(c => c.id === state.selectedCompanyId)?.product.split('(')[0] || 'Pixflow'})
             </div>
           </div>
 

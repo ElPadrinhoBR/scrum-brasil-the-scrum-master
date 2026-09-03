@@ -274,6 +274,343 @@ export const GameScreen: React.FC = () => {
             </div>
           </div>
         );
+      case 'velocelog':
+        return (
+          <div className="absolute inset-0 bg-[#0f1926] flex items-center justify-around p-6 overflow-hidden">
+            {/* Dispatch command screen with route maps */}
+            <div className="w-1/2 h-4/5 border-4 border-yellow-500 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-yellow-900 pb-1">
+                <span className="font-pressstart text-[8px] text-yellow-400">🚚 VELOCELOG DESPACHO</span>
+                <span className="font-mono text-[7px] text-green-400">GPS ONLINE: 842 FROTA</span>
+              </div>
+              <div className="grid grid-cols-4 grid-rows-3 gap-1.5 my-2 grow bg-slate-900/60 p-2 border border-slate-800">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="border border-yellow-500/30 bg-yellow-950/20 p-1 flex flex-col justify-between">
+                    <span className="text-[6px] font-mono text-yellow-200">ROTA #{i + 101}</span>
+                    <span className="text-[6px] font-mono text-green-400">98% NO PRAZO</span>
+                  </div>
+                ))}
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">ROTEIRIZAÇÃO DINÂMICA COM IA</span>
+            </div>
+            {/* Conveyor Belt indicator */}
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-white">📦 TRIAGEM RÁPIDA</span>
+              <div className="space-y-2 my-auto">
+                <div className="h-4 bg-yellow-500/40 border border-yellow-600 rounded flex items-center px-1 text-[7px] font-mono text-white">
+                  LOTE SP-LESTE: EM TRÂNSITO
+                </div>
+                <div className="h-4 bg-green-500/40 border border-green-600 rounded flex items-center px-1 text-[7px] font-mono text-white">
+                  LOTE SP-SUL: ENTREGUE
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">SLA LAST-MILE: 99.4%</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-yellow-400 uppercase bg-black/70 px-3 py-1 border border-yellow-500">
+              🚚 VeloceLog — Centro de Operações e Despacho
+            </div>
+          </div>
+        );
+      case 'healthpulse':
+        return (
+          <div className="absolute inset-0 bg-[#071a17] flex items-center justify-around p-6 overflow-hidden">
+            {/* Telemedicine & Patient monitors */}
+            <div className="w-1/2 h-4/5 border-4 border-emerald-500 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-emerald-900 pb-1">
+                <span className="font-pressstart text-[8px] text-emerald-400">🏥 TELECONSULTA MEDCONNECT</span>
+                <span className="font-mono text-[7px] text-white">LGPD V2.4 EM AUDITORIA</span>
+              </div>
+              <div className="space-y-2 my-auto">
+                <div className="h-6 bg-emerald-950/60 border border-emerald-700 flex items-center px-2 justify-between text-[7px] font-mono text-emerald-200">
+                  <span>SINAIS VITAIS: PACIENTE #4092</span>
+                  <span className="text-emerald-400 font-bold">ESTÁVEL</span>
+                </div>
+                <div className="h-8 bg-slate-900 border border-slate-700 flex items-center px-2 text-[7px] font-mono text-slate-300">
+                  RECEITA DIGITAL: ASSINATURA ICP-BRASIL VÁLIDA
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">PRONTUÁRIO INTEGRADO ANS</span>
+            </div>
+            {/* Heartbeat EKG monitor */}
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-emerald-300">💓 TELEMETRIA ECG</span>
+              <div className="h-20 bg-[#04120f] border border-emerald-900 flex items-center justify-around px-1">
+                <span className="text-emerald-400 font-mono text-lg animate-pulse">/\_/\_/\_</span>
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">BPM: 72 · LATÊNCIA: 18ms</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-emerald-400 uppercase bg-black/70 px-3 py-1 border border-emerald-500">
+              🏥 HealthPulse — Sala de Telemedicina e Prontuários
+            </div>
+          </div>
+        );
+      case 'agrosmart':
+        return (
+          <div className="absolute inset-0 bg-[#0d1a10] flex items-center justify-around p-6 overflow-hidden">
+            {/* View to green crop field and drone telemetry */}
+            <div className="w-1/2 h-4/5 border-4 border-emerald-600 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-emerald-900 pb-1">
+                <span className="font-pressstart text-[8px] text-emerald-400">🌾 SAFRAVIEW TELEMETRIA</span>
+                <span className="font-mono text-[7px] text-yellow-300">SATÉLITE: 4.8 KBPS</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 my-auto">
+                <div className="bg-emerald-950/40 border border-emerald-700 p-2 rounded text-[7px] font-mono text-emerald-100">
+                  UMIDADE DO SOLO: 64%<br />
+                  SENSOR LORA #18: OK
+                </div>
+                <div className="bg-emerald-950/40 border border-emerald-700 p-2 rounded text-[7px] font-mono text-emerald-100">
+                  DRONE TÉRMICO: VOANDO<br />
+                  TALHÃO B: FERTILIZADO
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">ESTAÇÃO METEOROLÓGICA NO CAMPO</span>
+            </div>
+            {/* Drone Bay */}
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-green-300">🛸 DOCA DE DRONES</span>
+              <div className="flex justify-around items-center grow text-2xl">
+                <span>🚁</span>
+                <span>📡</span>
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">BATERIA: 92% · ÁREA: 40.000 HA</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-emerald-400 uppercase bg-black/70 px-3 py-1 border border-emerald-600">
+              🌾 AgroSmart — Estação de Monitoramento Agrícola
+            </div>
+          </div>
+        );
+      case 'cybershield':
+        return (
+          <div className="absolute inset-0 bg-[#14080b] flex items-center justify-around p-6 overflow-hidden">
+            {/* Dark SOC War Room with Threat Map */}
+            <div className="w-3/5 h-4/5 border-4 border-retro-red bg-slate-950 p-3 shadow-[0_0_25px_rgba(239,68,68,0.3)] flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-red-900 pb-1">
+                <span className="font-pressstart text-[8px] text-retro-red animate-pulse">🛡️ THREATWATCHER SOC</span>
+                <span className="font-mono text-[7px] text-white">INGESTÃO: 2.1M EPS</span>
+              </div>
+              <div className="space-y-1 my-auto font-mono text-[7px] text-red-300 bg-red-950/20 p-2 border border-red-900">
+                <div>[ALERT] DDOS SYN-FLOOD MITIGADO EM 4S</div>
+                <div>[WARN] BRUTE-FORCE DETECTADO IP 185.220.X.X</div>
+                <div>[OK] FIREWALL AUTOMATION BLOCK ENFORCED</div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">CENTRO DE OPERAÇÕES DE SEGURANÇA</span>
+            </div>
+            <div className="w-1/4 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-yellow-400">⚠️ STATUS SOC</span>
+              <div className="text-center my-auto">
+                <span className="text-3xl animate-bounce">🚨</span>
+                <p className="text-[8px] font-mono text-retro-red mt-2">NÍVEL DEFCON 2</p>
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">CONTENÇÃO: 28S</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-retro-red uppercase bg-black/70 px-3 py-1 border border-retro-red">
+              🛡️ CyberShield — Sala de Operações de Ciberdefesa (SOC)
+            </div>
+          </div>
+        );
+      case 'edunext':
+        return (
+          <div className="absolute inset-0 bg-[#160d26] flex items-center justify-around p-6 overflow-hidden">
+            {/* Gamification studio and student learning boards */}
+            <div className="w-1/2 h-4/5 border-4 border-purple-500 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-purple-900 pb-1">
+                <span className="font-pressstart text-[8px] text-purple-300">🎓 APRENDA+ GAMIFICAÇÃO</span>
+                <span className="font-mono text-[7px] text-yellow-400">ALUNOS ATIVOS: 500K</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 my-auto">
+                <div className="bg-purple-950/40 border border-purple-700 p-2 text-center rounded">
+                  <span className="text-xl">🏆</span>
+                  <p className="text-[6px] font-mono text-purple-200 mt-1">MISSÃO COLETIVA</p>
+                </div>
+                <div className="bg-purple-950/40 border border-purple-700 p-2 text-center rounded">
+                  <span className="text-xl">⭐</span>
+                  <p className="text-[6px] font-mono text-yellow-200 mt-1">AVATAR NÍVEL 12</p>
+                </div>
+                <div className="bg-purple-950/40 border border-purple-700 p-2 text-center rounded">
+                  <span className="text-xl">📚</span>
+                  <p className="text-[6px] font-mono text-cyan-200 mt-1">TRILHA ADAPTATIVA</p>
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">REDES PÚBLICAS & PARTICULARES</span>
+            </div>
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-purple-400">📱 PAINEL ESCOLAR</span>
+              <div className="space-y-1.5 my-auto text-[7px] font-mono text-slate-300">
+                <div className="bg-slate-900 p-1 border border-slate-700">ENGAGAMENTO: +75%</div>
+                <div className="bg-slate-900 p-1 border border-slate-700">CONEXÃO LENTA: OTIMIZADO</div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">300+ ESCOLAS ATIVAS</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-purple-400 uppercase bg-black/70 px-3 py-1 border border-purple-500">
+              🎓 EduNext — Estúdio de Aprendizagem e Gamificação
+            </div>
+          </div>
+        );
+      case 'safevault':
+        return (
+          <div className="absolute inset-0 bg-[#0d1626] flex items-center justify-around p-6 overflow-hidden">
+            {/* Traditional Bank pillars with modern agile microservices */}
+            <div className="w-1/2 h-4/5 border-4 border-blue-400 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-blue-900 pb-1">
+                <span className="font-pressstart text-[8px] text-blue-300">🏛️ SAFEVAULT OPEN BANKING</span>
+                <span className="font-mono text-[7px] text-green-400">ESTEIRA CI/CD ATIVA</span>
+              </div>
+              <div className="space-y-2 my-auto text-[7px] font-mono text-blue-200">
+                <div className="bg-blue-950/40 p-2 border border-blue-700 rounded">
+                  MICROSSERVIÇOS OAUTH2: HOMOLOGADO<br />
+                  CONTRATO MAINFRAME: DESACOPLADO
+                </div>
+                <div className="bg-blue-950/40 p-2 border border-blue-700 rounded">
+                  CAB APPROVAL: DISPENSADO POR AUTOMAÇÃO<br />
+                  TESTES 100% RECONCILIADOS
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">TRANSIÇÃO ÁGIL CENTENÁRIA</span>
+            </div>
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-blue-400">💼 GOVERNANÇA</span>
+              <div className="text-center my-auto text-3xl">
+                🏛️
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">ZERO FALHAS EM AUDITORIA</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-blue-300 uppercase bg-black/70 px-3 py-1 border border-blue-400">
+              🏛️ SafeVault — Piso de Transformação Digital Bancária
+            </div>
+          </div>
+        );
+      case 'foodfast':
+        return (
+          <div className="absolute inset-0 bg-[#26150a] flex items-center justify-around p-6 overflow-hidden">
+            {/* Kitchen dispatch & delivery heatmap */}
+            <div className="w-1/2 h-4/5 border-4 border-orange-500 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-orange-900 pb-1">
+                <span className="font-pressstart text-[8px] text-orange-400">🍔 FOODFAST DISPATCH HUB</span>
+                <span className="font-mono text-[7px] text-green-400">TEMPO MÉDIO: 18 MIN</span>
+              </div>
+              <div className="space-y-1.5 my-auto text-[7px] font-mono text-orange-200">
+                <div className="bg-orange-950/40 p-2 border border-orange-700 rounded">
+                  FILA DE RESTAURANTES: 4.820 PEDIDOS<br />
+                  ESPERA DE MOTOBOY: 4 MINUTOS
+                </div>
+                <div className="bg-orange-950/40 p-2 border border-orange-700 rounded">
+                  WEBSOCKETS HEATMAP: ATUALIZADO 1S<br />
+                  RETENÇÃO PARCEIROS: +22%
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">MERCADO FOODTECH VELOZ</span>
+            </div>
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-orange-300">🛵 FROTA DE MOTOS</span>
+              <div className="text-center my-auto text-3xl">
+                🍕
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">40 CIDADES EM OPERAÇÃO</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-orange-400 uppercase bg-black/70 px-3 py-1 border border-orange-500">
+              🍔 FoodFast — Hub de Operações e Despacho de Cozinha
+            </div>
+          </div>
+        );
+      case 'autodrive':
+        return (
+          <div className="absolute inset-0 bg-[#07191f] flex items-center justify-around p-6 overflow-hidden">
+            {/* Automotive diagnostic garage with oscilloscope and CAN bus */}
+            <div className="w-1/2 h-4/5 border-4 border-cyan-400 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-cyan-900 pb-1">
+                <span className="font-pressstart text-[8px] text-cyan-300">🚗 FLEETINTEL TELEMETRIA</span>
+                <span className="font-mono text-[7px] text-cyan-200">CAN BUS J1939: ATIVO</span>
+              </div>
+              <div className="space-y-2 my-auto text-[7px] font-mono text-cyan-200">
+                <div className="bg-cyan-950/40 p-2 border border-cyan-700 rounded">
+                  FREIOS PREDITIVOS: 100% HOMOLOGADO<br />
+                  TEMPERATURA MOTOR: 88°C (SEGURO)
+                </div>
+                <div className="bg-cyan-950/40 p-2 border border-cyan-700 rounded">
+                  ALERTA EM CABINE: 0.04S RESPOSTA<br />
+                  RUÍDO ELÉTRICO: FILTRO DIGITAL OK
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">SOFTWARE EMBARCADO RTOS</span>
+            </div>
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-cyan-400">🚙 PISTA DE TESTES</span>
+              <div className="text-center my-auto text-3xl">
+                🏎️
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">TOLERÂNCIA ZERO A FALHAS</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-cyan-300 uppercase bg-black/70 px-3 py-1 border border-cyan-400">
+              🚗 AutoDrive — Garagem de Engenharia e Telemetria Veicular
+            </div>
+          </div>
+        );
+      case 'ecoenergy':
+        return (
+          <div className="absolute inset-0 bg-[#1a1906] flex items-center justify-around p-6 overflow-hidden">
+            {/* Renewable solar and grid control */}
+            <div className="w-1/2 h-4/5 border-4 border-yellow-400 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-yellow-900 pb-1">
+                <span className="font-pressstart text-[8px] text-yellow-300">☀️ SOLARTRADE CONTROLE</span>
+                <span className="font-mono text-[7px] text-green-400">ANEEL: REGULADO</span>
+              </div>
+              <div className="space-y-2 my-auto text-[7px] font-mono text-yellow-100">
+                <div className="bg-yellow-950/40 p-2 border border-yellow-700 rounded">
+                  GERAÇÃO SOLAR: 14.8 GWH/MÊS<br />
+                  COMPENSAÇÃO TARIFA: EXATA (6 CASAS)
+                </div>
+                <div className="bg-yellow-950/40 p-2 border border-yellow-700 rounded">
+                  ECONOMIA FAMÍLIAS: R$ 84/MÊS<br />
+                  CARBONO NEUTRO: 840 TONELADAS
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">TRANSIÇÃO ENERGÉTICA SUSTENTÁVEL</span>
+            </div>
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-yellow-400">🌱 FAZENDAS SOLARES</span>
+              <div className="text-center my-auto text-3xl">
+                ☀️
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">5.000 CLIENTES ATENDIDOS</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-yellow-300 uppercase bg-black/70 px-3 py-1 border border-yellow-400">
+              ☀️ EcoEnergy — Centro de Controle de Energia Renovável
+            </div>
+          </div>
+        );
+      case 'cloudcore':
+        return (
+          <div className="absolute inset-0 bg-[#120826] flex items-center justify-around p-6 overflow-hidden">
+            {/* Multicloud server aisles and Kubernetes terminal */}
+            <div className="w-1/2 h-4/5 border-4 border-indigo-400 bg-slate-950 p-3 shadow-retro flex flex-col justify-between">
+              <div className="flex justify-between items-center border-b border-indigo-900 pb-1">
+                <span className="font-pressstart text-[8px] text-indigo-300">☁️ KUBEMASTER ORCHESTRATION</span>
+                <span className="font-mono text-[7px] text-green-400">MULTICLOUD: AWS/GCP/AZURE</span>
+              </div>
+              <div className="space-y-2 my-auto text-[7px] font-mono text-indigo-200">
+                <div className="bg-indigo-950/40 p-2 border border-indigo-700 rounded">
+                  FAILOVER REGIONAL: 14 SEGUNDOS<br />
+                  TERRAFORM GITOPS: 100% DECLARATIVO
+                </div>
+                <div className="bg-indigo-950/40 p-2 border border-indigo-700 rounded">
+                  PODS REPLICADOS: 1.280 SERVIÇOS<br />
+                  DISPONIBILIDADE: 99.999% SLA
+                </div>
+              </div>
+              <span className="text-[7px] font-mono text-slate-500">ENGENHARIA DE PLATAFORMA SRE</span>
+            </div>
+            <div className="w-1/3 h-4/5 border-4 border-retro-border bg-slate-950 p-3 flex flex-col justify-between">
+              <span className="font-pressstart text-[8px] text-indigo-400">⚡ CLOUD FABRIC</span>
+              <div className="text-center my-auto text-3xl">
+                ☁️
+              </div>
+              <span className="text-[7px] font-mono text-slate-400 text-center">ZERO DOWNTIME TOLERANCE</span>
+            </div>
+            <div className="absolute top-4 text-center text-[9px] font-pressstart text-indigo-300 uppercase bg-black/70 px-3 py-1 border border-indigo-400">
+              ☁️ CloudCore — Sala de Infraestrutura e Plataforma Multicloud
+            </div>
+          </div>
+        );
       case 'escritorio':
       default:
         return (
