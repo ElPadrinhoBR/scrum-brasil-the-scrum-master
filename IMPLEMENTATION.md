@@ -7,6 +7,11 @@
 
 ## 1. IMPLEMENTADO
 
+### Rodapé Retro & Telemetria
+- [x] **Versão do Jogo**: Exibição da versão ativa (`v1.2.0`) com badge retrô e luz verde pulsante
+- [x] **Contador de Visitas**: Contador resiliente integrado via API pública (`counterapi.dev`) com fallback automático em `localStorage` e persistência por sessão
+- [x] Rodapé responsivo, discreto e adaptado a todas as telas do jogo (`Footer.tsx`)
+
 ### Quadro Kanban (Totalmente Refatorado no Estilo Kanban Real)
 - [x] 5 colunas clássicas com cores e identidade visual distintas:
   - **Backlog**: Cinza ardósia (#1a1a28), borda slate-600
@@ -16,7 +21,7 @@
   - **Concluído (Done)**: Esmeralda (#0d2018), borda emerald-600, texto riscado e selo "Entregue ✓"
 - [x] Barra superior de progresso da Sprint com porcentagem calculada em tempo real (ex: `2/4 (50%)`)
 - [x] Cards no estilo Kanban físico com borda lateral colorida (accent border), badge de Fibonacci (`sp`) e Valor de Negócio (`V`)
-- [x] Avatar circular com a primeira letra do desenvolvedor responsável e indicação de estresse/motivação
+- [x] Avatar circular com a inicial do desenvolvedor responsável e indicação de estresse/motivação
 - [x] Botões rápidos de transição entre colunas (`◀` e `▶`) permitindo mover cards para qualquer etapa
 - [x] Coluna "Concluído" com efeito de tarefa entregue, checkmark e som de sucesso ao completar
 - [x] Rodapé de cada coluna calculando o total de Story Points e Valor acumulado
@@ -37,7 +42,6 @@
 
 ### Correção de Fluxo Narrativo
 - [x] `getCurrentSprintDef()` exposto no `GameContext` e consumido no `GameScreen`
-- [x] Corrigido bug onde qualquer empresa mostrava os diálogos da Novatech
 - [x] Diálogos de Planning, Daily Events (dias 1, 2 e 3) e Review carregados diretamente da empresa selecionada
 - [x] Conclusão de Sprint (`finishSprintReview`) carrega histórias da empresa ativa
 
@@ -55,7 +59,7 @@
 ## 2. EM DESENVOLVIMENTO / PRÓXIMAS ETAPAS
 
 ### Alta Prioridade
-- [ ] **Expansão de Sprints por Empresa**: Adicionar Sprints 2 e 3 para as 10 empresas (atualmente cada uma possui Sprint 1 completa)
+- [ ] **Expansão de Sprints por Empresa**: Adicionar Sprints 2 e 3 para as 10 empresas
 - [ ] **Eventos de Crise / Boss Fight Temáticos**:
   - *VeloceLog*: Falha massiva de GPS às vésperas da Black Friday
   - *CyberShield*: Tentativa de invasão com sequestro de dados ao vivo
@@ -64,8 +68,7 @@
 
 ### Média Prioridade
 - [ ] **Desbloqueio Progressivo de Empresas**: Começar com 3 empresas e desbloquear as demais ao atingir nota A
-- [ ] **Conquistas Temáticas por Vertical**:
-  - Ex: "Auditor Implacável" (HealthPulse), "Piloto Automático" (AutoDrive)
+- [ ] **Conquistas Temáticas por Vertical**: Ex: "Auditor Implacável" (HealthPulse), "Piloto Automático" (AutoDrive)
 - [ ] **Estatísticas e Gráfico Burndown**: Visualização gráfica do burn-down ao longo dos 3 dias da Sprint
 
 ### Baixa Prioridade
@@ -79,6 +82,7 @@
 
 | Data | Correção | Status |
 |---|---|---|
+| 2026-09-03 | Contador de visitas e versão v1.2.0 adicionados no rodapé (Footer.tsx) | CONCLUÍDO |
 | 2026-09-03 | Quadro Kanban reestilizado (WIP limits, cards com accent border, barra de sprint) | CONCLUÍDO |
 | 2026-09-03 | Validação automatizada de 100% das 11 empresas com scripts de teste | CONCLUÍDO |
 | 2026-09-03 | Resolução do bug de narrativa fixa da Novatech em todas as empresas | CONCLUÍDO |

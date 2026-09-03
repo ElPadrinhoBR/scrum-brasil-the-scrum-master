@@ -10,6 +10,7 @@ import { ResultsScreen } from './pages/ResultsScreen';
 import { AIModeConfig } from './pages/AIModeConfig';
 import { AIModeGame } from './pages/AIModeGame';
 import { AIConfig } from './ai/AIConfig';
+import { Footer } from './components/ui/Footer';
 
 const GameShell: React.FC<{ onBackToMenu: () => void }> = ({ onBackToMenu }) => {
   const { state, activeTab, setActiveTab } = useGame();
@@ -19,7 +20,7 @@ const GameShell: React.FC<{ onBackToMenu: () => void }> = ({ onBackToMenu }) => 
   }
 
   return (
-    <div className="min-h-screen bg-retro-bg text-retro-text p-4 md:p-6 select-none max-w-7xl mx-auto flex flex-col">
+    <div className="w-full text-retro-text p-4 md:p-6 select-none max-w-7xl mx-auto flex flex-col grow">
       <HUD state={state} activeTab={activeTab} setActiveTab={setActiveTab} onExit={onBackToMenu} />
       <main className="grow flex flex-col bg-slate-950/20 border-2 border-slate-900 rounded-lg p-2 md:p-4 min-h-[500px]">
         {activeTab === 'game' && <GameScreen />}
@@ -46,31 +47,36 @@ export const App: React.FC = () => {
   return (
     <LanguageProvider>
       <GameProvider>
-        {view === 'menu' && (
-          <MainMenu
-            onStartGame={() => setView('game')}
-            onAIMode={() => setView('ai_config')}
-          />
-        )}
+        <div className="min-h-screen flex flex-col bg-retro-bg text-retro-text">
+          <div className="grow flex flex-col">
+            {view === 'menu' && (
+              <MainMenu
+                onStartGame={() => setView('game')}
+                onAIMode={() => setView('ai_config')}
+              />
+            )}
 
-        {view === 'game' && (
-          <GameShell onBackToMenu={() => setView('menu')} />
-        )}
+            {view === 'game' && (
+              <GameShell onBackToMenu={() => setView('menu')} />
+            )}
 
-        {view === 'ai_config' && (
-          <AIModeConfig
-            onBack={() => setView('menu')}
-            onStart={handleStartAI}
-          />
-        )}
+            {view === 'ai_config' && (
+              <AIModeConfig
+                onBack={() => setView('menu')}
+                onStart={handleStartAI}
+              />
+            )}
 
-        {view === 'ai_game' && aiConfig && (
-          <AIModeGame
-            config={aiConfig}
-            playerName={aiPlayerName}
-            onBack={() => setView('ai_config')}
-          />
-        )}
+            {view === 'ai_game' && aiConfig && (
+              <AIModeGame
+                config={aiConfig}
+                playerName={aiPlayerName}
+                onBack={() => setView('ai_config')}
+              />
+            )}
+          </div>
+          <Footer />
+        </div>
       </GameProvider>
     </LanguageProvider>
   );
