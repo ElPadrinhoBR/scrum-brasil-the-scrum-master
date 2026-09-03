@@ -6,7 +6,15 @@ import { RetroCard } from '../components/ui/RetroCard';
 import { RetroButton } from '../components/ui/RetroButton';
 
 export const SprintBoardPage: React.FC = () => {
-  const { state, assignDeveloperToStory, simulateActiveDayProgress, startDevelopmentPhase, setActiveTab } = useGame();
+  const {
+    state,
+    assignDeveloperToStory,
+    moveStoryStatus,
+    addStoryToBacklog,
+    simulateActiveDayProgress,
+    startDevelopmentPhase,
+    setActiveTab,
+  } = useGame();
   const { t } = useLanguage();
   const { backlog, phase, day, team } = state;
 
@@ -69,6 +77,8 @@ export const SprintBoardPage: React.FC = () => {
           team={team}
           isPlanningMode={isPlanning}
           onAssignStory={assignDeveloperToStory}
+          onMoveStoryStatus={moveStoryStatus}
+          onAddStory={addStoryToBacklog}
         />
       </div>
     </div>

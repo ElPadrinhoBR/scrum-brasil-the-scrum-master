@@ -60,6 +60,10 @@ export const SaveSystem = {
       currentEventId: null,
       retroImprovement: null,
       playerName: 'Roberto',
+      playerGender: 'male',
+      playerAvatar: 'roberto',
+      selectedCompanyId: 'novatech',
+      recentMetricDeltas: {},
       gameMode: 'campaign',
       sandboxDialogues: [],
     };

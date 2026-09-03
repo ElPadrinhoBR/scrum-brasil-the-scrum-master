@@ -86,6 +86,22 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
       hasBeard: true,
       beardColor: '#57534e',
     },
+    roberto: {
+      hairColor: '#3e2723', // Dark brown
+      hairStyle: 'short_black',
+      shirtColor: '#1e3a8a', // Blue navy blazer
+      collarColor: '#ffffff', // White shirt
+      hasGlasses: true,
+      glassesColor: '#0f172a', // Modern dark frames
+    },
+    mariana: {
+      hairColor: '#311b0e', // Deep brunette
+      hairStyle: 'blonde_long', // Wavy long hair
+      shirtColor: '#831843', // Wine/Bordeaux stylish sweater
+      collarColor: '#fb7185', // Soft rose collar
+      hasGlasses: false,
+      hasEarrings: true,
+    },
   };
 
   const spec = specs[characterId] || specs.ana;

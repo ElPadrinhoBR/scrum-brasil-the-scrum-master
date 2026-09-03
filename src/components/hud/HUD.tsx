@@ -53,6 +53,25 @@ export const HUD: React.FC<HUDProps> = ({
     );
   };
 
+  // Helper to render oscillating delta badges
+  const renderDeltaBadge = (key: keyof typeof stats, isRisk = false) => {
+    const delta = state.recentMetricDeltas?.[key];
+    if (!delta || delta === 0) return null;
+
+    const isPositiveGood = !isRisk;
+    const isGood = isPositiveGood ? delta > 0 : delta < 0;
+
+    return (
+      <span
+        className={`ml-1 text-[8px] font-mono px-1 py-0.2 rounded font-bold animate-bounce ${
+          isGood ? 'text-retro-green bg-green-950/80' : 'text-retro-red bg-red-950/80'
+        }`}
+      >
+        {delta > 0 ? `▲+${delta}` : `▼${delta}`}
+      </span>
+    );
+  };
+
   return (
     <div className="border-4 border-retro-border bg-retro-panel p-4 shadow-retro mb-4">
       {/* Top row: Sprint, Level, Navigation */}
@@ -79,6 +98,19 @@ export const HUD: React.FC<HUDProps> = ({
                 </div>
               </>
             )}
+          </div>
+
+          {/* Company & Scrum Master Info */}
+          <div className="border-l-4 border-dashed border-slate-800 pl-3 flex flex-col justify-center">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs">{state.playerAvatar === 'mariana' ? '👩‍💼' : '👨‍💼'}</span>
+              <span className="font-pressstart text-[9px] text-white">
+                {state.playerName} <span className="text-retro-accent text-[8px]">[SM]</span>
+              </span>
+            </div>
+            <div className="text-[8px] font-mono text-retro-dimmed mt-0.5">
+              Empresa: <strong className="text-slate-300">Novatech</strong> (Pixflow)
+            </div>
           </div>
 
           <div className="border-l-4 border-dashed border-slate-800 pl-4">
@@ -148,30 +180,48 @@ export const HUD: React.FC<HUDProps> = ({
         </div>
       </div>
 
-      {/* Grid of Global Stats */}
+      {/* Grid of Global Stats (Oscilantes) */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4 py-3 border-b-2 border-slate-800 text-[10px]">
         <div className="flex flex-col space-y-1">
-          <span className="font-pressstart text-retro-accent">🎯 VALOR</span>
+          <div className="flex items-center">
+            <span className="font-pressstart text-retro-accent">🎯 VALOR</span>
+            {renderDeltaBadge('valor')}
+          </div>
           {renderTextBar(stats.valor)}
         </div>
         <div className="flex flex-col space-y-1">
-          <span className="font-pressstart text-retro-purple">❤️ MORAL</span>
+          <div className="flex items-center">
+            <span className="font-pressstart text-retro-purple">❤️ MORAL</span>
+            {renderDeltaBadge('moral')}
+          </div>
           {renderTextBar(stats.moral)}
         </div>
         <div className="flex flex-col space-y-1">
-          <span className="font-pressstart text-retro-green">🧪 QUALIDADE</span>
+          <div className="flex items-center">
+            <span className="font-pressstart text-retro-green">🧪 QUALIDADE</span>
+            {renderDeltaBadge('qualidade')}
+          </div>
           {renderTextBar(stats.qualidade)}
         </div>
         <div className="flex flex-col space-y-1">
-          <span className="font-pressstart text-retro-blue">⚡ VELOCIDADE</span>
+          <div className="flex items-center">
+            <span className="font-pressstart text-retro-blue">⚡ VELOCIDADE</span>
+            {renderDeltaBadge('velocidade')}
+          </div>
           {renderTextBar(stats.velocidade)}
         </div>
         <div className="flex flex-col space-y-1">
-          <span className="font-pressstart text-white">🤝 CONFIANÇA</span>
+          <div className="flex items-center">
+            <span className="font-pressstart text-white">🤝 CONFIANÇA</span>
+            {renderDeltaBadge('confianca')}
+          </div>
           {renderTextBar(stats.confianca)}
         </div>
         <div className="flex flex-col space-y-1">
-          <span className="font-pressstart text-retro-red">⚠️ RISCO</span>
+          <div className="flex items-center">
+            <span className="font-pressstart text-retro-red">⚠️ RISCO</span>
+            {renderDeltaBadge('risco', true)}
+          </div>
           {renderTextBar(stats.risco, true)}
         </div>
       </div>

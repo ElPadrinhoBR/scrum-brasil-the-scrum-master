@@ -54,12 +54,16 @@ export interface GameState {
   currentEventId: string | null;
   retroImprovement: string | null; // Selected action in Retro
   playerName: string;
+  playerGender: 'male' | 'female';
+  playerAvatar: 'roberto' | 'mariana';
+  selectedCompanyId: string;
+  recentMetricDeltas?: Partial<Record<keyof GameStats, number>>;
   gameMode: 'campaign' | 'sandbox';
   sandboxDialogues: Array<{ 
     speaker: string; 
     text: string; 
     expression?: 'neutral' | 'happy' | 'worried' | 'angry' | 'sad' | 'surprised' | 'confident';
-    background?: 'escritorio' | 'reuniao' | 'desenvolvimento' | 'cafeteria' | 'servidores' | 'diretoria';
+    background?: 'escritorio' | 'reuniao' | 'desenvolvimento' | 'cafeteria' | 'servidores' | 'diretoria' | 'war_room' | 'home_office' | 'treinamento' | 'lab_inovacao';
     choices?: any[];
   }>;
 }

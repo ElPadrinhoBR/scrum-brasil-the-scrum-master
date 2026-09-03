@@ -13,12 +13,20 @@ interface GameContextType {
   setActiveTab: (tab: 'game' | 'team' | 'board') => void;
   muted: boolean;
   toggleMute: () => void;
-  startNewGame: (playerName?: string, gameMode?: 'campaign' | 'sandbox') => void;
+  startNewGame: (
+    playerName?: string,
+    gameMode?: 'campaign' | 'sandbox',
+    playerGender?: 'male' | 'female',
+    playerAvatar?: 'roberto' | 'mariana',
+    selectedCompanyId?: string,
+  ) => void;
   loadSavedGame: () => boolean;
   advanceDialogueLine: () => void;
   selectDialogueChoice: (choice: DialogueChoice) => void;
   startDevelopmentPhase: () => void;
   assignDeveloperToStory: (storyId: string, memberId: string | null) => void;
+  moveStoryStatus: (storyId: string, targetStatus: UserStory['status']) => void;
+  addStoryToBacklog: (title: string, value: number, complexity: number) => void;
   simulateActiveDayProgress: () => void;
   finishSprintReview: () => void;
   selectRetrospectiveImprovement: (improvementId: string, name: string) => void;
@@ -53,12 +61,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setHasSaveGame(true);
   };
 
-  const startNewGame = (playerName?: string, gameMode?: 'campaign' | 'sandbox') => {
+  const startNewGame = (
+    playerName?: string,
+    gameMode?: 'campaign' | 'sandbox',
+    playerGender?: 'male' | 'female',
+    playerAvatar?: 'roberto' | 'mariana',
+    selectedCompanyId?: string,
+  ) => {
     const freshState = SaveSystem.createInitialState();
     if (playerName) {
       freshState.playerName = playerName;
     }
     freshState.gameMode = gameMode || 'campaign';
+    freshState.playerGender = playerGender || (playerAvatar === 'mariana' ? 'female' : 'male');
+    freshState.playerAvatar = playerAvatar || 'roberto';
+    freshState.selectedCompanyId = selectedCompanyId || 'novatech';
+    freshState.recentMetricDeltas = {};
 
     if (freshState.gameMode === 'sandbox') {
       const initialGoal = "Estruturar o MVP do Pixflow (Sandbox)";
@@ -431,6 +449,78 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     SoundManager.playClick();
   };
 
+  const moveStoryStatus = (storyId: string, targetStatus: UserStory['status']) => {
+    let gainedValue = 0;
+    const updatedBacklog = state.backlog.map((story) => {
+      if (story.id === storyId) {
+        let nextProgress = story.progress;
+        let nextAssigned = story.assignedTo;
+
+        if (targetStatus === 'done') {
+          nextProgress = 100;
+          if (story.status !== 'done') {
+            gainedValue = story.value * 3;
+          }
+        } else if (targetStatus === 'backlog') {
+          nextProgress = 0;
+          nextAssigned = null;
+        } else if (targetStatus === 'todo') {
+          nextProgress = 0;
+        }
+
+        return {
+          ...story,
+          status: targetStatus,
+          progress: nextProgress,
+          assignedTo: nextAssigned,
+        };
+      }
+      return story;
+    });
+
+    let updatedStats = { ...state.stats };
+    let deltas: Partial<Record<keyof typeof updatedStats, number>> = {};
+
+    if (gainedValue > 0) {
+      updatedStats.valor = Math.min(100, updatedStats.valor + gainedValue);
+      updatedStats.confianca = Math.min(100, updatedStats.confianca + 2);
+      updatedStats.risco = Math.max(0, updatedStats.risco - 2);
+      deltas.valor = gainedValue;
+      deltas.confianca = 2;
+      deltas.risco = -2;
+      SoundManager.playSuccess();
+    } else {
+      SoundManager.playClick();
+    }
+
+    saveState({
+      ...state,
+      backlog: updatedBacklog,
+      stats: updatedStats,
+      recentMetricDeltas: Object.keys(deltas).length > 0 ? deltas : state.recentMetricDeltas,
+    });
+  };
+
+  const addStoryToBacklog = (title: string, value: number, complexity: number) => {
+    const nextNum = state.backlog.length + 1;
+    const newId = `US-${nextNum.toString().padStart(2, '0')}`;
+    const newStory: UserStory = {
+      id: newId,
+      title: title.trim(),
+      value: Math.max(1, Math.min(10, value)),
+      complexity: complexity || 3,
+      status: 'backlog',
+      assignedTo: null,
+      progress: 0,
+    };
+
+    saveState({
+      ...state,
+      backlog: [...state.backlog, newStory],
+    });
+    SoundManager.playSuccess();
+  };
+
   // Simulates progress on assigned stories for the current day
   const simulateActiveDayProgress = () => {
     if (state.phase !== 'DEVELOPMENT') return;
@@ -443,9 +533,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     let updatedBacklog = JSON.parse(JSON.stringify(state.backlog)) as UserStory[];
     let updatedTeam = JSON.parse(JSON.stringify(state.team)) as Record<string, MemberStats>;
+    let updatedStats = { ...state.stats };
     
     // Read speed and general stats
     const { velocidade } = state.stats;
+    let completedStoriesCount = 0;
+    let reviewStoriesCount = 0;
+    let valueDeliveredToday = 0;
 
     // Simulate work for each card
     updatedBacklog.forEach((story) => {
@@ -456,7 +550,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!devStats) return;
 
       // Base calculation of daily developer progress
-      // base progress ranges around 25-45 points depending on speed & motivation
       const baseWork = 22 + (velocidade / 5) + (devStats.motivation / 6);
       
       // If developer is heavily stressed, apply 30% penalty
@@ -475,8 +568,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           story.status = 'progress';
         } else if (story.status === 'progress') {
           story.status = 'review';
+          reviewStoriesCount++;
         } else if (story.status === 'review') {
           story.status = 'done';
+          completedStoriesCount++;
+          valueDeliveredToday += story.value * 2;
           SoundManager.playSuccess();
           // Increase motivation of dev who finished card
           devStats.motivation = Math.min(100, devStats.motivation + 5);
@@ -485,10 +581,76 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Generate random developer stress increase (1-5 points per day)
-    Object.keys(updatedTeam).forEach((k) => {
+    let totalStress = 0;
+    let totalMotivation = 0;
+    const teamKeys = Object.keys(updatedTeam);
+
+    teamKeys.forEach((k) => {
       const dev = updatedTeam[k];
       dev.stress = Math.min(100, dev.stress + Math.round(Math.random() * 4 + 1));
+      totalStress += dev.stress;
+      totalMotivation += dev.motivation;
     });
+
+    const avgStress = Math.round(totalStress / teamKeys.length);
+    const avgMotivation = Math.round(totalMotivation / teamKeys.length);
+
+    // ── Cálculo dinâmico das 6 métricas oscilantes ──
+    let deltaValor = valueDeliveredToday;
+    let deltaVelocidade = completedStoriesCount > 0 ? (completedStoriesCount * 3) : -1;
+    let deltaQualidade = reviewStoriesCount * 2 + (completedStoriesCount * 2);
+    let deltaMoral = 0;
+    let deltaConfianca = completedStoriesCount > 0 ? (completedStoriesCount * 4) : 0;
+    let deltaRisco = 0;
+
+    // Impacto do estresse na Moral e Risco
+    if (avgStress > 60) {
+      deltaMoral -= Math.round((avgStress - 60) / 4);
+      deltaRisco += 4;
+      deltaVelocidade -= 2;
+    } else if (avgStress < 35) {
+      deltaMoral += 3;
+      deltaRisco -= 2;
+    }
+
+    // Impacto da motivação
+    if (avgMotivation > 75) {
+      deltaMoral += 2;
+      deltaConfianca += 2;
+    } else if (avgMotivation < 45) {
+      deltaConfianca -= 3;
+      deltaRisco += 3;
+    }
+
+    // Se tarefas foram entregues hoje, alivia risco
+    if (completedStoriesCount > 0) {
+      deltaRisco -= completedStoriesCount * 3;
+    } else {
+      // Dia sem entregas eleva ligeiramente o risco
+      deltaRisco += 2;
+      deltaConfianca -= 1;
+    }
+
+    // Flutuação orgânica leve de mercado (+/- 1 aleatório)
+    const organicJitter = Math.floor(Math.random() * 3) - 1; // -1, 0 ou +1
+    deltaQualidade += organicJitter;
+
+    // Aplicar deltas aos limites 0-100
+    updatedStats.valor = Math.max(0, Math.min(100, updatedStats.valor + deltaValor));
+    updatedStats.moral = Math.max(0, Math.min(100, updatedStats.moral + deltaMoral));
+    updatedStats.qualidade = Math.max(0, Math.min(100, updatedStats.qualidade + deltaQualidade));
+    updatedStats.velocidade = Math.max(0, Math.min(100, updatedStats.velocidade + deltaVelocidade));
+    updatedStats.confianca = Math.max(0, Math.min(100, updatedStats.confianca + deltaConfianca));
+    updatedStats.risco = Math.max(0, Math.min(100, updatedStats.risco + deltaRisco));
+
+    const recentDeltas: Partial<Record<keyof typeof updatedStats, number>> = {
+      valor: deltaValor,
+      moral: deltaMoral,
+      qualidade: deltaQualidade,
+      velocidade: deltaVelocidade,
+      confianca: deltaConfianca,
+      risco: deltaRisco,
+    };
 
     // Advance day
     const nextDay = state.day + 1;
@@ -532,6 +694,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...state,
       backlog: updatedBacklog,
       team: updatedTeam,
+      stats: updatedStats,
+      recentMetricDeltas: recentDeltas,
       day: nextDay > 3 ? 3 : nextDay, // cap day at 3, transition handled by phase
       phase: nextPhase,
       dialogueIndex: nextDialogueIndex,
@@ -719,6 +883,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         selectDialogueChoice,
         startDevelopmentPhase,
         assignDeveloperToStory,
+        moveStoryStatus,
+        addStoryToBacklog,
         simulateActiveDayProgress,
         finishSprintReview,
         selectRetrospectiveImprovement,
