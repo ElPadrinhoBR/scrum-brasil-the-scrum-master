@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserStory, MemberStats } from '../../game/GameState';
-import { CHARACTERS_DATA } from '../../data/characters';
+import { CHARACTERS_DATA, isCharacterQA } from '../../data/characters';
 import { RetroButton } from '../ui/RetroButton';
 
 interface SprintBoardProps {
@@ -451,45 +451,96 @@ export const SprintBoard: React.FC<SprintBoardProps> = ({
               </div>
             </div>
 
-            <p className="text-[9px] text-retro-dimmed font-pressstart mb-3">Selecione o responsável:</p>
-            <div className="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto mb-4 pr-1">
-              {Object.keys(CHARACTERS_DATA).map((key) => {
-                const char = CHARACTERS_DATA[key];
-                const stats = team[key];
-                if (!stats) return null;
-                const isAssigned = selectedStory.assignedTo === key;
+            {/* Status Context Banner */}
+            {selectedStory.status === 'review' && (
+              <div className="bg-purple-950/80 border border-purple-600/80 p-2.5 rounded text-[8px] font-sans text-purple-200 mb-3 space-y-0.5">
+                <span className="font-pressstart text-[7px] text-purple-300 block uppercase">🔍 Exclusivo para QA</span>
+                <span>Somente profissionais de QA (Marcos, Dandara ou Tainá) possuem capacidade técnica para homologar na coluna de Review.</span>
+              </div>
+            )}
 
-                return (
-                  <button
-                    key={key}
-                    onClick={() => { if (onAssignStory) onAssignStory(selectedStory.id, key); setSelectedStory(null); }}
-                    className={`flex justify-between items-center text-left border-2 p-2.5 rounded transition-all ${
-                      isAssigned
-                        ? 'border-retro-green bg-green-950/40 text-white'
-                        : 'border-slate-700 bg-[#0d0d18] hover:border-retro-accent text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center font-pressstart text-[9px] text-white">
-                        {char.name.charAt(0)}
-                      </span>
-                      <div>
-                        <span className="font-pressstart text-[9px] block">{char.name}</span>
-                        <span className="text-[7px] text-retro-dimmed font-mono">{char.role}</span>
+            {selectedStory.status === 'todo' && (
+              <div className="bg-blue-950/80 border border-blue-600/80 p-2 rounded text-[8px] font-sans text-blue-200 mb-3">
+                <span className="font-pressstart text-[7px] text-blue-300 block uppercase">⚡ Fluxo Contínuo</span>
+                <span>Ao atribuir um responsável, esta história avançará automaticamente para <strong>In Progress</strong>.</span>
+              </div>
+            )}
+
+            <p className="text-[9px] text-retro-dimmed font-pressstart mb-2">Selecione o responsável:</p>
+            <div className="flex flex-col gap-1.5 max-h-[240px] overflow-y-auto mb-4 pr-1">
+              {Object.keys(CHARACTERS_DATA)
+                .sort((a, b) => {
+                  // Se a história estiver em review, prioriza QAs no topo
+                  if (selectedStory.status === 'review') {
+                    const aQA = isCharacterQA(a) ? 1 : 0;
+                    const bQA = isCharacterQA(b) ? 1 : 0;
+                    return bQA - aQA;
+                  }
+                  return 0;
+                })
+                .map((key) => {
+                  const char = CHARACTERS_DATA[key];
+                  const stats = team[key];
+                  if (!stats) return null;
+                  const isAssigned = selectedStory.assignedTo === key;
+                  const charIsQA = isCharacterQA(key);
+                  const isBlockedForReview = selectedStory.status === 'review' && !charIsQA;
+
+                  return (
+                    <button
+                      key={key}
+                      disabled={isBlockedForReview}
+                      onClick={() => {
+                        if (onAssignStory) onAssignStory(selectedStory.id, key);
+                        setSelectedStory(null);
+                      }}
+                      className={`flex justify-between items-center text-left border-2 p-2 rounded transition-all ${
+                        isBlockedForReview
+                          ? 'opacity-35 cursor-not-allowed border-slate-800 bg-[#0a0a12]'
+                          : isAssigned
+                          ? 'border-retro-green bg-green-950/40 text-white'
+                          : charIsQA
+                          ? 'border-purple-600/70 bg-purple-950/30 hover:border-purple-400 text-slate-200'
+                          : 'border-slate-700 bg-[#0d0d18] hover:border-retro-accent text-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-7 h-7 rounded-full flex items-center justify-center font-pressstart text-[9px] text-white ${
+                            charIsQA ? 'bg-purple-800 border border-purple-400' : 'bg-slate-700'
+                          }`}
+                        >
+                          {char.name.charAt(0)}
+                        </span>
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-pressstart text-[9px] text-white">{char.name}</span>
+                            {charIsQA && (
+                              <span className="bg-purple-900 border border-purple-500 text-purple-300 font-mono text-[7px] px-1 py-0.2 rounded font-bold">
+                                QA
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[7px] text-retro-dimmed font-mono">
+                            {isBlockedForReview ? '🔒 Requer perfil QA' : char.role}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right font-mono text-[8px]">
-                      <span className="text-retro-green block">Motiv: {stats.motivation}%</span>
-                      <span className={stats.stress > 60 ? 'text-retro-red' : 'text-slate-300'}>
-                        Stress: {stats.stress}%
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+                      <div className="text-right font-mono text-[8px]">
+                        <span className="text-retro-green block">Motiv: {stats.motivation}%</span>
+                        <span className={stats.stress > 60 ? 'text-retro-red' : 'text-slate-300'}>
+                          Stress: {stats.stress}%
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
 
               <button
-                onClick={() => { if (onAssignStory) onAssignStory(selectedStory.id, null); setSelectedStory(null); }}
+                onClick={() => {
+                  if (onAssignStory) onAssignStory(selectedStory.id, null);
+                  setSelectedStory(null);
+                }}
                 className="border-2 border-dashed border-red-800 p-2 hover:border-retro-red text-retro-red text-[9px] font-pressstart uppercase mt-1 rounded text-center"
               >
                 ✕ Remover Atribuição

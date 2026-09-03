@@ -82,6 +82,11 @@ export const INITIAL_TEAM: Record<string, MemberStats> = {
   carlos: { motivation: 60, stress: 25, confidence: 65, relationship: 50 },
   julia: { motivation: 85, stress: 20, confidence: 70, relationship: 55 },
   marcos: { motivation: 70, stress: 35, confidence: 60, relationship: 50 },
+  dandara: { motivation: 85, stress: 20, confidence: 80, relationship: 65 },
+  taina: { motivation: 90, stress: 15, confidence: 85, relationship: 70 },
+  kofi: { motivation: 75, stress: 25, confidence: 75, relationship: 55 },
+  kenji: { motivation: 80, stress: 20, confidence: 70, relationship: 60 },
+  aline: { motivation: 85, stress: 25, confidence: 80, relationship: 65 },
   beatriz: { motivation: 75, stress: 20, confidence: 70, relationship: 60 },
   rafael: { motivation: 65, stress: 15, confidence: 80, relationship: 50 },
 };

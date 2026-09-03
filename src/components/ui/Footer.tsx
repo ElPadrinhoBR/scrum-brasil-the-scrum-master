@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export const GAME_VERSION = 'v1.2.0';
+export const GAME_VERSION = 'v1.2.1';
 
 export const Footer: React.FC = () => {
   const [visitCount, setVisitCount] = useState<number>(144);

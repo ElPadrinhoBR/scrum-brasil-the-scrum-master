@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { GameState, UserStory, MemberStats, getRequiredXPForLevel } from './GameState';
 import { SaveSystem } from './SaveSystem';
 import { SPRINTS_DATA, DialogueChoice, DialogueLine } from '../data/sprints';
-import { CHARACTERS_DATA } from '../data/characters';
+import { CHARACTERS_DATA, isCharacterQA } from '../data/characters';
 import { ACHIEVEMENTS_DATA } from '../data/achievements';
 import { SoundManager } from '../components/ui/SoundManager';
 import { SandboxGenerator } from './SandboxGenerator';
@@ -452,9 +452,27 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const assignDeveloperToStory = (storyId: string, memberId: string | null) => {
+    // Validação: somente QAs têm capacidade para os reviews
+    const targetStory = state.backlog.find((s) => s.id === storyId);
+    if (targetStory && targetStory.status === 'review' && memberId && !isCharacterQA(memberId)) {
+      alert("⚠️ Somente profissionais de QA (Marcos, Dandara ou Tainá) têm capacidade para revisar histórias na coluna de Review!");
+      return;
+    }
+
     const updatedBacklog = state.backlog.map((story) => {
       if (story.id === storyId) {
-        return { ...story, assignedTo: memberId };
+        let nextStatus = story.status;
+
+        // "quando seleciono os personagens que vão fazer as tarefas do TO DO automaticamente eles tem que ir pra In Progress"
+        if (memberId && story.status === 'todo') {
+          nextStatus = 'progress';
+        }
+
+        return {
+          ...story,
+          assignedTo: memberId,
+          status: nextStatus,
+        };
       }
       return story;
     });
@@ -468,10 +486,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const moveStoryStatus = (storyId: string, targetStatus: UserStory['status']) => {
     let gainedValue = 0;
+    const currentStory = state.backlog.find((s) => s.id === storyId);
+
+    // Validação ao mover para review: se o membro não for QA, desatribui para aguardar um QA
+    let nextAssigned = currentStory?.assignedTo || null;
+    if (targetStatus === 'review' && nextAssigned && !isCharacterQA(nextAssigned)) {
+      nextAssigned = null;
+    }
+
     const updatedBacklog = state.backlog.map((story) => {
       if (story.id === storyId) {
         let nextProgress = story.progress;
-        let nextAssigned = story.assignedTo;
 
         if (targetStatus === 'done') {
           nextProgress = 100;
@@ -579,20 +604,31 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Columns flow: todo -> progress -> review -> done
       if (story.progress >= 100) {
-        story.progress = 0; // Reset progress for next column transition
-        
         if (story.status === 'todo') {
           story.status = 'progress';
+          story.progress = 0;
         } else if (story.status === 'progress') {
+          // "se a etapa estiver em review automaticamente vai pra review"
           story.status = 'review';
+          story.progress = 0;
           reviewStoriesCount++;
+          // "somente os QAs tem capacidade para os review": desatribui se não for QA para aguardar um QA
+          if (!isCharacterQA(story.assignedTo)) {
+            story.assignedTo = null;
+          }
         } else if (story.status === 'review') {
-          story.status = 'done';
-          completedStoriesCount++;
-          valueDeliveredToday += story.value * 2;
-          SoundManager.playSuccess();
-          // Increase motivation of dev who finished card
-          devStats.motivation = Math.min(100, devStats.motivation + 5);
+          // "somente os QAs tem capacidade para os review" e "o que for sendo concluido vai ficando persistente no Concluido"
+          if (isCharacterQA(story.assignedTo)) {
+            story.status = 'done';
+            story.progress = 100;
+            completedStoriesCount++;
+            valueDeliveredToday += story.value * 2;
+            SoundManager.playSuccess();
+            // QA ganha motivação ao homologar e aprovar entrega de valor
+            devStats.motivation = Math.min(100, devStats.motivation + 6);
+          } else {
+            story.progress = 90; // Permanece em review até um QA homologar
+          }
         }
       }
     });

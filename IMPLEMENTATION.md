@@ -1,44 +1,42 @@
-﻿# IMPLEMENTATION.md — Scrum Brasil: The Scrum Master
+﻿# IMPLEMENTATION.md — Scrum Brasil: The Scrum Master (v1.2.1)
 
 > Rastreamento contínuo de funcionalidades implementadas e próximas etapas planejadas.
 > Atualizado automaticamente a cada ciclo de desenvolvimento.
 
 ---
 
-## 1. IMPLEMENTADO
+## 1. IMPLEMENTADO (v1.2.1)
 
-### Imagens Reais dos Personagens e Fundos de Todas as Empresas
-- [x] **Retratos Reais dos Personagens de Escolha**:
-  - `roberto.png`: Ilustração retrô de alta qualidade de Roberto (Scrum Master homem com óculos modernos e blazer azul marinho)
-  - `mariana.png`: Ilustração retrô de alta qualidade de Mariana (Scrum Master mulher com ondas morenas e suéter burgundy)
-  - Integrados tanto no menu de seleção (`MainMenu.tsx`) quanto nos diálogos do jogo
-- [x] **Fundos Reais em PNG para Todas as 11 Empresas**:
-  - `escritorio.png`: Novatech Soluções (Sede da startup Pixflow)
-  - `velocelog.png`: VeloceLog Express (Centro de despacho logístico e mapas de rota)
-  - `healthpulse.png`: HealthPulse Digital (Centro médico de teleconsulta e telemetria)
-  - `agrosmart.png`: AgroSmart Terra (Central da fazenda inteligente com drones e sensores)
-  - `cybershield.png`: CyberShield Defesa (SOC war room com mapas globais de ameaça)
-  - `safevault.png`: SafeVault Finance (Diretoria executiva bancária)
-  - `cloudcore.png`: CloudCore Infrastructure (Datacenter multicloud com racks e LEDs)
-  - `edunext.png`: EduNext Academy (Laboratório de tecnologia educacional)
-  - `foodfast.png`: FoodFast Delivery (Central de pedidos e despacho)
-  - `autodrive.png`: AutoDrive Connected (Oficina e telemetria automotiva)
-  - `ecoenergy.png`: EcoEnergy Renováveis (Sala de controle de usinas solares)
-- [x] **Substituição dos Bonequinhos Básicos**:
-  - O componente `PixelCharacter` agora prioriza sempre os arquivos PNG de alta qualidade de cada funcionário e Scrum Master, com badges animados de expressão sobrepostos
+### Diversidade de Personagens & Capacidades de Especialidade
+- [x] **Expansão do Time para 11 Membros (Diversidade de Gêneros e Etnias)**:
+  - **Dandara**: Senior QA Specialist (Mulher negra) — especialista em automação e acessibilidade
+  - **Tainá**: QA Lead (Mulher indígena) — especialista em testes de carga e resiliência
+  - **Kofi**: Backend Developer (Homem negro) — arquitetura distribuída e escalabilidade
+  - **Kenji**: Mobile & UI Developer (Homem nipo-brasileiro) — microinterações e tempos de resposta
+  - **Aline**: DevSecOps Engineer (Mulher parda) — segurança defensiva e infraestrutura como código
+  - **Ana**: Product Owner
+  - **Carlos**: Backend Developer
+  - **Júlia**: Frontend Developer
+  - **Marcos**: QA Engineer
+  - **Beatriz**: UX/UI Designer
+  - **Rafael**: DevOps Engineer
+- [x] **Suporte a Avatares com Características Visuais Próprias**:
+  - Penteados autênticos (box-braids com contas douradas, cabelo liso comprido com franja e grafismos, fade degradê com risca, repicado anime tech, cachos volumosos com bandana)
+  - Tons de pele e sombras específicas por etnia
 
-### Rodapé Retro & Contador de Visitas Dinâmico
-- [x] **Contador de Visitas Funcional**:
-  - Incremento a cada visualização/recarregamento da página (F5)
-  - Persistência permanente em `localStorage`
-- [x] **Versão do Jogo**: Exibição da versão ativa (`v1.2.0`) com badge retrô e luz verde pulsante
+### Regras Ágeis do Kanban & Exclusividade de QA
+- [x] **Auto-Avanço de To Do para In Progress**: Ao atribuir um responsável por uma história na coluna `todo`, ela transita automaticamente para `progress`
+- [x] **Transição Automática para Review**: Ao atingir 100% de desenvolvimento diário, o card vai automaticamente para `review`
+- [x] **Regra de Ouro: Exclusividade de QA no Review**:
+  - Somente profissionais de QA (**Marcos, Dandara ou Tainá**) têm capacidade técnica para assumir e homologar histórias na coluna `review`
+  - Modal de atribuição desabilita e bloqueia desenvolvedores não-QA com aviso visual
+  - Se um dev terminar o código, a história vai para `review` e desatribui para aguardar um QA
+  - Na simulação diária, o card em `review` só avança para `done` se um QA for o responsável pela homologação
+- [x] **Persistência no Concluído**: Cards em `done` ficam permanentemente fixados com texto tachado, selo "Entregue ✓" e somam os pontos no rodapé da coluna
 
-### Quadro Kanban (Totalmente Refatorado no Estilo Kanban Real)
-- [x] 5 colunas clássicas: Backlog, To Do, In Progress (com WIP Limit), Review / QA e Done (com strikethrough e selo Entregue)
-- [x] Barra de progresso da Sprint, cards com borda colorida e modal de criação com sequência Fibonacci
-
-### Verificação e Validação das 11 Empresas (100% Funcionais)
-- [x] Todas as 11 empresas jogáveis e ativas com histórias, metas, daily events e review independentes
+### Versão e Documentação
+- [x] Versão atualizada para **1.2.1** no `package.json`, `Footer.tsx` e `README.md`
+- [x] `README.md` amplamente atualizado com a tabela de diversidade de desenvolvedores, regras de QA no Kanban e badges
 
 ---
 
@@ -60,10 +58,8 @@
 
 | Data | Correção | Status |
 |---|---|---|
-| 2026-09-03 | Imagens reais PNG geradas para Roberto, Mariana e backgrounds de todas as 11 empresas | CONCLUÍDO |
+| 2026-09-03 | Lançamento v1.2.1: 11 membros com diversidade, exclusividade de QA no review e auto-avanço no Kanban | CONCLUÍDO |
+| 2026-09-03 | Imagens reais PNG geradas para Roberto, Mariana e cenários de todas as 11 empresas | CONCLUÍDO |
 | 2026-09-03 | Contador de visitas agora incrementa a cada recarregamento da página (F5) | CONCLUÍDO |
-| 2026-09-03 | Avatares pixel art bonitos com expressões dinâmicas e uniformes por empresa | CONCLUÍDO |
-| 2026-09-03 | Contador de visitas e versão v1.2.0 adicionados no rodapé (Footer.tsx) | CONCLUÍDO |
-| 2026-09-03 | Quadro Kanban reestilizado (WIP limits, cards com accent border, barra de sprint) | CONCLUÍDO |
-| 2026-09-03 | Validação automatizada de 100% das 11 empresas com scripts de teste | CONCLUÍDO |
+| 2026-09-03 | Avatares pixel art com expressões dinâmicas e uniformes por empresa | CONCLUÍDO |
 | 2026-09-03 | Resolução do bug de narrativa fixa da Novatech em todas as empresas | CONCLUÍDO |
