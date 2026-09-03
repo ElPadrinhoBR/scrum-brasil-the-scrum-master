@@ -7,31 +7,31 @@
 
 ## 1. IMPLEMENTADO
 
+### Imagens Reais dos Personagens e Fundos de Todas as Empresas
+- [x] **Retratos Reais dos Personagens de Escolha**:
+  - `roberto.png`: Ilustração retrô de alta qualidade de Roberto (Scrum Master homem com óculos modernos e blazer azul marinho)
+  - `mariana.png`: Ilustração retrô de alta qualidade de Mariana (Scrum Master mulher com ondas morenas e suéter burgundy)
+  - Integrados tanto no menu de seleção (`MainMenu.tsx`) quanto nos diálogos do jogo
+- [x] **Fundos Reais em PNG para Todas as 11 Empresas**:
+  - `escritorio.png`: Novatech Soluções (Sede da startup Pixflow)
+  - `velocelog.png`: VeloceLog Express (Centro de despacho logístico e mapas de rota)
+  - `healthpulse.png`: HealthPulse Digital (Centro médico de teleconsulta e telemetria)
+  - `agrosmart.png`: AgroSmart Terra (Central da fazenda inteligente com drones e sensores)
+  - `cybershield.png`: CyberShield Defesa (SOC war room com mapas globais de ameaça)
+  - `safevault.png`: SafeVault Finance (Diretoria executiva bancária)
+  - `cloudcore.png`: CloudCore Infrastructure (Datacenter multicloud com racks e LEDs)
+  - `edunext.png`: EduNext Academy (Laboratório de tecnologia educacional)
+  - `foodfast.png`: FoodFast Delivery (Central de pedidos e despacho)
+  - `autodrive.png`: AutoDrive Connected (Oficina e telemetria automotiva)
+  - `ecoenergy.png`: EcoEnergy Renováveis (Sala de controle de usinas solares)
+- [x] **Substituição dos Bonequinhos Básicos**:
+  - O componente `PixelCharacter` agora prioriza sempre os arquivos PNG de alta qualidade de cada funcionário e Scrum Master, com badges animados de expressão sobrepostos
+
 ### Rodapé Retro & Contador de Visitas Dinâmico
 - [x] **Contador de Visitas Funcional**:
-  - Incremento garantido a cada visualização/recarregamento da página (F5)
-  - Persistência permanente em `localStorage` (o número nunca reinicia e sempre sobe)
-  - Efeito visual de destaque em verde no badge quando atualizado
+  - Incremento a cada visualização/recarregamento da página (F5)
+  - Persistência permanente em `localStorage`
 - [x] **Versão do Jogo**: Exibição da versão ativa (`v1.2.0`) com badge retrô e luz verde pulsante
-
-### Avatares Bonitos em Pixel Art & Expressões Faciais Dinâmicas
-- [x] **Refatoração Completa do PixelCharacter**:
-  - Traços detalhados em pixel art SVG nítido (*crispEdges*) com estética retrô / chibi / anime
-  - Bochechas rosadas (*blush*) com intensidades reativas ao humor
-  - Penteados, cabelos e acessórios exclusivos para os 8 personagens (Ana, Carlos, Júlia, Marcos, Beatriz, Rafael, Roberto e Mariana)
-  - Uniformes e cores temáticas adaptadas ao setor da empresa ativa
-- [x] **7 Expressões Emocionais Dinâmicas**:
-  - `neutral`: Olhar focado, sereno e profissional
-  - `happy`: Olhinhos sorridentes `^ ^`, boca aberta e bochechas coradas
-  - `worried`: Sobrancelhas caídas, boca trêmula e gota de suor na testa
-  - `angry`: Sobrancelhas cerradas, boca aberta furiosa e veia de raiva animada
-  - `sad`: Olhos caídos, lágrima azul escorrendo pelo rosto
-  - `surprised`: Olhões arregalados com reflexo de luz e boca em "O"
-  - `confident`: Piscadinha esperta (*wink*), sorriso de canto e estrela dourada cintilante
-- [x] **Normalização Inteligente de Personagens**:
-  - Suporte a qualquer variação de grafia/acentuação (`'Ana'`, `'carlos'`, `'Júlia'`, `'Julia'`, etc.)
-  - Quando o Scrum Master fala nas histórias de qualquer empresa, é exibido o avatar do personagem escolhido pelo jogador (**Roberto** ou **Mariana**) com a expressão facial correta
-- [x] **Identidade Visual nas Caixas de Diálogo**: Cores temáticas e cargos corretos em todas as 11 empresas
 
 ### Quadro Kanban (Totalmente Refatorado no Estilo Kanban Real)
 - [x] 5 colunas clássicas: Backlog, To Do, In Progress (com WIP Limit), Review / QA e Done (com strikethrough e selo Entregue)
@@ -60,8 +60,9 @@
 
 | Data | Correção | Status |
 |---|---|---|
+| 2026-09-03 | Imagens reais PNG geradas para Roberto, Mariana e backgrounds de todas as 11 empresas | CONCLUÍDO |
 | 2026-09-03 | Contador de visitas agora incrementa a cada recarregamento da página (F5) | CONCLUÍDO |
-| 2026-09-03 | Avatares pixel art bonitos com 7 expressões dinâmicas e uniformes por empresa | CONCLUÍDO |
+| 2026-09-03 | Avatares pixel art bonitos com expressões dinâmicas e uniformes por empresa | CONCLUÍDO |
 | 2026-09-03 | Contador de visitas e versão v1.2.0 adicionados no rodapé (Footer.tsx) | CONCLUÍDO |
 | 2026-09-03 | Quadro Kanban reestilizado (WIP limits, cards com accent border, barra de sprint) | CONCLUÍDO |
 | 2026-09-03 | Validação automatizada de 100% das 11 empresas com scripts de teste | CONCLUÍDO |
