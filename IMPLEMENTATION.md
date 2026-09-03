@@ -1,133 +1,85 @@
 ﻿# IMPLEMENTATION.md — Scrum Brasil: The Scrum Master
 
-> Rastreamento continuo de funcionalidades implementadas e proximas etapas planejadas.
+> Rastreamento contínuo de funcionalidades implementadas e próximas etapas planejadas.
 > Atualizado automaticamente a cada ciclo de desenvolvimento.
 
 ---
 
-## IMPLEMENTADO
+## 1. IMPLEMENTADO
 
-### Core do Jogo
-- [x] Motor de Visual Novel com dialogos, typewriter effect e historico
-- [x] Sistema de escolhas com bifurcacoes e efeitos em metricas e XP
-- [x] Glossario interativo (45 termos ageis clicaveis com definicoes)
-- [x] Fases da Sprint: INTRO -> PLANNING -> DEVELOPMENT (3 dias) -> REVIEW -> RETROSPECTIVA
-- [x] Modo Campanha (8 Sprints fixas) e Modo Sandbox (Sprints infinitas procedurais)
-- [x] Sistema de XP, niveis (1-5) e Skill Points desbloqueaveis
-- [x] 13 conquistas coleccionaveis com criterios de desbloqueio
-- [x] Salvamento local (localStorage) com controle de versao de save
+### Quadro Kanban (Totalmente Refatorado no Estilo Kanban Real)
+- [x] 5 colunas clássicas com cores e identidade visual distintas:
+  - **Backlog**: Cinza ardósia (#1a1a28), borda slate-600
+  - **To Do**: Azul escuro (#101828), borda blue-700
+  - **In Progress**: Âmbar (#231c0a), borda amber-600, indicador pulsante e alerta de WIP Limit
+  - **Review / QA**: Roxo (#1c1528), borda purple-600, barra de progresso do card
+  - **Concluído (Done)**: Esmeralda (#0d2018), borda emerald-600, texto riscado e selo "Entregue ✓"
+- [x] Barra superior de progresso da Sprint com porcentagem calculada em tempo real (ex: `2/4 (50%)`)
+- [x] Cards no estilo Kanban físico com borda lateral colorida (accent border), badge de Fibonacci (`sp`) e Valor de Negócio (`V`)
+- [x] Avatar circular com a primeira letra do desenvolvedor responsável e indicação de estresse/motivação
+- [x] Botões rápidos de transição entre colunas (`◀` e `▶`) permitindo mover cards para qualquer etapa
+- [x] Coluna "Concluído" com efeito de tarefa entregue, checkmark e som de sucesso ao completar
+- [x] Rodapé de cada coluna calculando o total de Story Points e Valor acumulado
+- [x] Modal "Definir História no Backlog" com input de texto, range de Valor (1–10) e botões de Fibonacci (1, 2, 3, 5, 8)
+
+### Verificação e Validação das 11 Empresas (100% Funcionais com Campanhas Próprias)
+- [x] **Novatech Soluções** (`novatech`): Pixflow (Fintech / Pix) — Meta: Estruturar MVP
+- [x] **VeloceLog Express** (`velocelog`): RouteFast (Logtech / IA) — Meta: 500 entregas simultâneas em SP
+- [x] **HealthPulse Digital** (`healthpulse`): MedConnect (Healthtech / LGPD) — Meta: Teleconsulta criptografada
+- [x] **AgroSmart Terra** (`agrosmart`): SafraView (Agrotech / IoT) — Meta: Sensores de solo e Bluetooth Mesh
+- [x] **EduNext Academy** (`edunext`): Aprenda+ (Edtech / Gamificação) — Meta: Trilhas adaptativas para ano letivo
+- [x] **CyberShield Defesa** (`cybershield`): ThreatWatcher (Cibersegurança) — Meta: Contenção de ransomware em <60s
+- [x] **SafeVault Finance** (`safevault`): OpenBank Core (Banco Legado) — Meta: APIs de Open Finance sem queda de caixa
+- [x] **FoodFast Delivery** (`foodfast`): FoodFast App (Foodtech) — Meta: Rastreamento em mapa e despacho de pedidos
+- [x] **AutoDrive Connected** (`autodrive`): FleetIntel (Automotivo / CAN bus) — Meta: Telemetria de motores e freios
+- [x] **EcoEnergy Renováveis** (`ecoenergy`): SolarTrade (Cleantech) — Meta: Liquidação de créditos solares
+- [x] **CloudCore Infrastructure** (`cloudcore`): KubeMaster (DevOps) — Meta: Clusters Kubernetes multicloud
+
+### Correção de Fluxo Narrativo
+- [x] `getCurrentSprintDef()` exposto no `GameContext` e consumido no `GameScreen`
+- [x] Corrigido bug onde qualquer empresa mostrava os diálogos da Novatech
+- [x] Diálogos de Planning, Daily Events (dias 1, 2 e 3) e Review carregados diretamente da empresa selecionada
+- [x] Conclusão de Sprint (`finishSprintReview`) carrega histórias da empresa ativa
 
 ### Personagens e Avatares
-- [x] 6 desenvolvedores com perfis, estresse, motivacao e especialidades
-- [x] Escolha de Scrum Master: Roberto (perfil analitico) e Mariana (perfil empatico)
-- [x] Componente PixelCharacter com sprites SVG e expressoes condicionais
-- [x] HUD com avatar, nome e empresa do SM ativo
+- [x] Escolha de Scrum Master: Roberto (analítico) e Mariana (empática)
+- [x] 6 desenvolvedores do time com especialidades, estresse e motivação dinâmicos
+- [x] Sprites SVG retro com expressões faciais dinâmicas
 
-### Sistema de Empresas
-- [x] Catalogo com 11 empresas jogaveis com segmentos, produtos e desafios unicos
-- [x] Todas as empresas ATIVAS e selecionaveis no fluxo de novo jogo
-- [x] Campanhas de historias independentes por empresa (companyStories.ts)
-- [x] CORRECAO CRITICA: getCurrentSprintDef() exposto no contexto
-        cada empresa carrega sua propria narrativa (nao mais a Novatech para todas)
-- [x] Carregamento correto das historias da empresa na proxima Sprint (finishSprintReview)
-
-Empresas disponíveis:
-  novatech   | Novatech Solucoes   | Pixflow          | Fintech / Pix
-  velocelog  | VeloceLog Express   | RouteFast        | Logtech / Last-Mile
-  healthpulse| HealthPulse Digital | MedConnect       | Healthtech / LGPD
-  agrosmart  | AgroSmart Terra     | SafraView        | Agrotech / IoT
-  edunext    | EduNext Academy     | Aprenda+         | Edtech / Gamificacao
-  cybershield| CyberShield Defesa  | ThreatWatcher    | Ciberseguranca / SOC
-  safevault  | SafeVault Finance   | OpenBank Core    | Banco / Transformacao Agil
-  foodfast   | FoodFast Delivery   | FoodFast App     | Foodtech / Marketplace
-  autodrive  | AutoDrive Connected | FleetIntel       | Automotivo / OBD-II
-  ecoenergy  | EcoEnergy Renovaveis| SolarTrade       | Cleantech / Energia Solar
-  cloudcore  | CloudCore Infra     | KubeMaster       | DevOps / Multicloud
-
-### Quadro Kanban
-- [x] 5 colunas: Backlog -> To Do -> In Progress -> Review/QA -> Done
-- [x] Botoes para mover cards entre colunas
-- [x] Modal "Definir Backlog" (Titulo + Valor de Negocio + Story Points Fibonacci)
-- [x] Atribuicao flexivel de desenvolvedores por card
-- [x] Simulacao de progresso diario com animacoes
-
-### Metricas Oscilantes
-- [x] 6 metricas reativas: Valor, Moral, Qualidade, Velocidade, Confianca, Risco
-- [x] Calculo dinamico a cada dia simulado e a cada decisao de dialogo
-- [x] Badges animados +X (verde) e -X (vermelho) no HUD
-
-### Modo Tutorial
-- [x] 6 modulos interativos com navegacao por abas e pills
-- [x] Botao "Tutorial / Como Jogar" no menu principal
-
-### Cenarios / Backgrounds
-- [x] 6 cenarios retro originais (SVG): escritorio, reuniao, desenvolvimento, cafeteria, servidores, diretoria
-- [x] 4 cenarios adicionais: war_room, home_office, treinamento, lab_inovacao
-- [x] 10 cenarios exclusivos por empresa (um para cada empresa)
-- [x] Sistema hibrido: carrega PNG de public/backgrounds/ ou fallback para SVG
-
-### Modo IA - Situacoes Infinitas
-- [x] Suporte a Gemini, Claude e GPT via chave de API configuravel
-- [x] Campo de texto livre para digitar o modelo exato
-- [x] Anti-repeticao de situacoes por hash de titulos recentes
-- [x] Progressao por nivel (Iniciante -> Expert)
-- [x] Auto-reparo de JSON truncado e retry automatico
-
-### Infraestrutura
-- [x] React 18 + TypeScript + Tailwind CSS + Vite 5
-- [x] Web Audio API (sons chiptune sem arquivos externos)
-- [x] Deploy automatizado via GitHub Actions -> GitHub Pages
-- [x] README.md completo e atualizado
-- [x] i18n: Portugues, Ingles e Espanhol
+### Métricas Oscilantes
+- [x] 6 métricas ativas: Valor, Moral, Qualidade, Velocidade, Confiança e Risco
+- [x] Flutuação dinâmica por dia simulado com badges animados no HUD
 
 ---
 
-## EM DESENVOLVIMENTO / PROXIMAS ETAPAS
+## 2. EM DESENVOLVIMENTO / PRÓXIMAS ETAPAS
 
 ### Alta Prioridade
-- [ ] Mais Sprints por Empresa: cada empresa tem 1 Sprint de conteudo, expandir para 3-8 Sprints unicas
-- [ ] Eventos Boss/Crise por Empresa: evento dramatico especifico
-        ex: VeloceLog = apagao de GPS na Black Friday
-        ex: CyberShield = ataque de ransomware em horario de pico
-- [ ] Personagens Exclusivos por Empresa: personagens adicionais
-        ex: gerente conservador do banco na SafeVault
-- [ ] Tela de Resultados por Empresa: final diferente e narrativa de encerramento especifica
+- [ ] **Expansão de Sprints por Empresa**: Adicionar Sprints 2 e 3 para as 10 empresas (atualmente cada uma possui Sprint 1 completa)
+- [ ] **Eventos de Crise / Boss Fight Temáticos**:
+  - *VeloceLog*: Falha massiva de GPS às vésperas da Black Friday
+  - *CyberShield*: Tentativa de invasão com sequestro de dados ao vivo
+  - *HealthPulse*: Auditoria surpresa da ANPD sobre prontuários
+- [ ] **Filtros e Drag-and-Drop no Kanban**: Permitir arrastar os cards entre as colunas além dos botões de avanço
 
-### Media Prioridade
-- [ ] Sistema de Progressao entre Empresas: desbloquear novas empresas ao completar campanhas
-- [ ] Conquistas Exclusivas por Empresa: badges especificos por vertical
-        ex: Agronomo Digital para AgroSmart
-- [ ] Dificuldades de Campanha: Facil / Medio / Dificil
+### Média Prioridade
+- [ ] **Desbloqueio Progressivo de Empresas**: Começar com 3 empresas e desbloquear as demais ao atingir nota A
+- [ ] **Conquistas Temáticas por Vertical**:
+  - Ex: "Auditor Implacável" (HealthPulse), "Piloto Automático" (AutoDrive)
+- [ ] **Estatísticas e Gráfico Burndown**: Visualização gráfica do burn-down ao longo dos 3 dias da Sprint
 
-### Baixa Prioridade / Futuro
-- [ ] Leaderboard Online: ranking de jogadores por empresa e nota final
-- [ ] Editor de Situacoes: ferramenta para professores criarem cenarios sem codigo
-- [ ] Modo Cooperativo: 2 jogadores gerenciando a mesma Sprint
-- [ ] App Mobile Nativo: versao React Native para iOS e Android
-- [ ] Sistema de Missoes Diarias: desafios novos gerados todo dia
-- [ ] Integracao com Moodle/Canvas: exportacao de relatorio de desempenho para LMS
+### Baixa Prioridade
+- [ ] Ranking online / Leaderboard global
+- [ ] Modo multiplayer ou sala cooperativa para treinamento corporativo
+- [ ] Integração com LMS educacional (Moodle/Canvas)
 
 ---
 
-## BUGS CONHECIDOS E CORRECOES RECENTES
+## 3. HISTÓRICO DE CORREÇÕES
 
-2026-09-03 | Todas as empresas exibiam a narrativa da Novatech | CORRIGIDO
-2026-09-03 | Language nao exportado de LanguageContext        | CORRIGIDO
-2026-09-03 | JSON truncado da IA causando erro               | CORRIGIDO
-2026-09-03 | Situacoes do Modo IA se repetindo              | CORRIGIDO
-
----
-
-## ARQUIVOS CHAVE
-
-src/data/companies.ts          - Catalogo das 11 empresas
-src/data/companyStories.ts     - Campanhas/historias por empresa (NOVO)
-src/data/sprints.ts            - 8 Sprints originais Novatech/Pixflow
-src/game/GameContext.tsx       - Logica central + getCurrentSprintDef() exposto (CORRIGIDO)
-src/game/modular/SituationRegistry.ts - Sistema modular de eventos (NOVO)
-src/pages/MainMenu.tsx         - Fluxo: Nome -> Personagem -> Empresa -> Modo (ATUALIZADO)
-src/pages/GameScreen.tsx       - VN com backgrounds dinamicos (CORRIGIDO)
-src/pages/TutorialPage.tsx     - Modo Tutorial interativo (NOVO)
-src/components/characters/PixelCharacter.tsx - Sprites Roberto e Mariana (ATUALIZADO)
-src/components/hud/HUD.tsx     - Metricas oscilantes + badges (ATUALIZADO)
-src/components/sprint/SprintBoard.tsx - Kanban 5 colunas (ATUALIZADO)
+| Data | Correção | Status |
+|---|---|---|
+| 2026-09-03 | Quadro Kanban reestilizado (WIP limits, cards com accent border, barra de sprint) | CONCLUÍDO |
+| 2026-09-03 | Validação automatizada de 100% das 11 empresas com scripts de teste | CONCLUÍDO |
+| 2026-09-03 | Resolução do bug de narrativa fixa da Novatech em todas as empresas | CONCLUÍDO |
+| 2026-09-03 | Geração de IMPLEMENTATION.md na raiz para rastreamento de features | CONCLUÍDO |

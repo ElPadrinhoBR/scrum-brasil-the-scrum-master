@@ -14,6 +14,89 @@ interface SprintBoardProps {
 
 const STATUS_ORDER: UserStory['status'][] = ['backlog', 'todo', 'progress', 'review', 'done'];
 
+// Cores e estilos por status — estilo Kanban profissional
+const COL_CONFIG: Record<UserStory['status'], {
+  label: string;
+  icon: string;
+  headerBg: string;
+  headerText: string;
+  colBg: string;
+  colBorder: string;
+  cardBorder: string;
+  cardBg: string;
+  cardAccent: string;
+  dotColor: string;
+  countBg: string;
+}> = {
+  backlog: {
+    label: 'Backlog',
+    icon: '📦',
+    headerBg: 'bg-slate-800',
+    headerText: 'text-slate-200',
+    colBg: 'bg-[#111118]',
+    colBorder: 'border-slate-700',
+    cardBorder: 'border-slate-600',
+    cardBg: 'bg-[#1a1a28]',
+    cardAccent: 'border-l-slate-500',
+    dotColor: 'bg-slate-400',
+    countBg: 'bg-slate-700 text-slate-200',
+  },
+  todo: {
+    label: 'To Do',
+    icon: '📋',
+    headerBg: 'bg-blue-900',
+    headerText: 'text-blue-100',
+    colBg: 'bg-[#0d111e]',
+    colBorder: 'border-blue-700',
+    cardBorder: 'border-blue-700/60',
+    cardBg: 'bg-[#101828]',
+    cardAccent: 'border-l-blue-500',
+    dotColor: 'bg-blue-400',
+    countBg: 'bg-blue-900 text-blue-200',
+  },
+  progress: {
+    label: 'In Progress',
+    icon: '⚙️',
+    headerBg: 'bg-amber-900',
+    headerText: 'text-amber-100',
+    colBg: 'bg-[#1a1508]',
+    colBorder: 'border-amber-600',
+    cardBorder: 'border-amber-600/60',
+    cardBg: 'bg-[#231c0a]',
+    cardAccent: 'border-l-amber-400',
+    dotColor: 'bg-amber-400 animate-pulse',
+    countBg: 'bg-amber-900 text-amber-200',
+  },
+  review: {
+    label: 'Review / QA',
+    icon: '🔍',
+    headerBg: 'bg-purple-900',
+    headerText: 'text-purple-100',
+    colBg: 'bg-[#130f1e]',
+    colBorder: 'border-purple-600',
+    cardBorder: 'border-purple-600/60',
+    cardBg: 'bg-[#1c1528]',
+    cardAccent: 'border-l-purple-500',
+    dotColor: 'bg-purple-400',
+    countBg: 'bg-purple-900 text-purple-200',
+  },
+  done: {
+    label: 'Concluído ✓',
+    icon: '✅',
+    headerBg: 'bg-emerald-900',
+    headerText: 'text-emerald-100',
+    colBg: 'bg-[#071512]',
+    colBorder: 'border-emerald-600',
+    cardBorder: 'border-emerald-700/60',
+    cardBg: 'bg-[#0d2018]',
+    cardAccent: 'border-l-emerald-400',
+    dotColor: 'bg-emerald-400',
+    countBg: 'bg-emerald-900 text-emerald-200',
+  },
+};
+
+const FIBONACCI = [1, 2, 3, 5, 8];
+
 export const SprintBoard: React.FC<SprintBoardProps> = ({
   backlog,
   onAssignStory,
@@ -27,360 +110,394 @@ export const SprintBoard: React.FC<SprintBoardProps> = ({
   const [newTitle, setNewTitle] = useState('');
   const [newValue, setNewValue] = useState(5);
   const [newComplexity, setNewComplexity] = useState(3);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
-  const columns: Array<{
-    id: UserStory['status'];
-    title: string;
-    bgColor: string;
-    borderColor: string;
-    badgeColor: string;
-    icon: string;
-  }> = [
-    { id: 'backlog', title: 'Backlog', bgColor: 'bg-[#141424]', borderColor: 'border-slate-700', badgeColor: 'bg-slate-800 text-slate-300', icon: '📦' },
-    { id: 'todo', title: 'To Do', bgColor: 'bg-[#181a38]', borderColor: 'border-retro-blue', badgeColor: 'bg-blue-950 text-blue-300', icon: '📋' },
-    { id: 'progress', title: 'In Progress', bgColor: 'bg-[#14281e]', borderColor: 'border-retro-green', badgeColor: 'bg-green-950 text-green-300', icon: '⚙️' },
-    { id: 'review', title: 'Review / QA', bgColor: 'bg-[#292414]', borderColor: 'border-yellow-600', badgeColor: 'bg-yellow-950 text-yellow-300', icon: '👀' },
-    { id: 'done', title: 'Done (Pronto)', bgColor: 'bg-[#122b1e]', borderColor: 'border-emerald-500', badgeColor: 'bg-emerald-950 text-emerald-300', icon: '✅' },
-  ];
-
-  const getStoriesByStatus = (status: UserStory['status']) => {
-    return backlog.filter((story) => story.status === status);
-  };
+  const getStoriesByStatus = (status: UserStory['status']) =>
+    backlog.filter((s) => s.status === status);
 
   const getMemberName = (id: string | null) => {
-    if (!id) return 'Não atribuído';
+    if (!id) return null;
     return CHARACTERS_DATA[id]?.name || id;
   };
 
-  const handleCreateStory = () => {
-    if (!newTitle.trim()) {
-      alert('⚠️ Por favor, digite o título da história de usuário.');
-      return;
-    }
-    if (onAddStory) {
-      onAddStory(newTitle.trim(), newValue, newComplexity);
-    }
-    setNewTitle('');
-    setNewValue(5);
-    setNewComplexity(3);
-    setIsAddModalOpen(false);
+  const getMemberAvatar = (id: string | null) => {
+    if (!id) return '?';
+    const name = CHARACTERS_DATA[id]?.name || id;
+    return name.charAt(0).toUpperCase();
   };
 
-  const handleMove = (story: UserStory, direction: 'prev' | 'next') => {
+  const handleMove = (story: UserStory, dir: 'prev' | 'next') => {
     if (!onMoveStoryStatus) return;
-    const currentIndex = STATUS_ORDER.indexOf(story.status);
-    if (direction === 'prev' && currentIndex > 0) {
-      onMoveStoryStatus(story.id, STATUS_ORDER[currentIndex - 1]);
-    } else if (direction === 'next' && currentIndex < STATUS_ORDER.length - 1) {
-      onMoveStoryStatus(story.id, STATUS_ORDER[currentIndex + 1]);
-    }
+    const idx = STATUS_ORDER.indexOf(story.status);
+    if (dir === 'prev' && idx > 0) onMoveStoryStatus(story.id, STATUS_ORDER[idx - 1]);
+    if (dir === 'next' && idx < STATUS_ORDER.length - 1) onMoveStoryStatus(story.id, STATUS_ORDER[idx + 1]);
   };
+
+  const handleCreateStory = () => {
+    if (!newTitle.trim()) { alert('⚠️ Digite o título da história.'); return; }
+    if (onAddStory) onAddStory(newTitle.trim(), newValue, newComplexity);
+    setNewTitle(''); setNewValue(5); setNewComplexity(3); setIsAddModalOpen(false);
+  };
+
+  const totalStories = backlog.length;
+  const doneCount = getStoriesByStatus('done').length;
+  const progressPct = totalStories > 0 ? Math.round((doneCount / totalStories) * 100) : 0;
 
   return (
-    <div className="w-full flex flex-col h-full select-none space-y-3">
-      {/* Board Controls & Title */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-[#101020] p-3 border-2 border-retro-border rounded">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">📋</span>
-            <h2 className="font-pressstart text-xs text-retro-accent uppercase">
-              Quadro Kanban Ágil & Backlog
+    <div className="w-full flex flex-col h-full select-none gap-3">
+
+      {/* ── Header Bar ── */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 bg-[#0d0d18] border-2 border-retro-border px-4 py-3 rounded-md shadow-md">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">📊</span>
+          <div>
+            <h2 className="font-pressstart text-[11px] text-retro-accent uppercase tracking-wider">
+              Quadro Kanban — Sprint Board
             </h2>
+            <p className="text-[9px] font-sans text-retro-dimmed mt-0.5">
+              {isPlanningMode
+                ? '📌 Planejamento: Mova histórias do Backlog para To Do e atribua desenvolvedores.'
+                : '🔄 Desenvolvimento: Simule dias para avançar cards automaticamente.'}
+            </p>
           </div>
-          <p className="text-[10px] text-retro-dimmed mt-0.5 font-sans">
-            {isPlanningMode
-              ? 'Planejamento: Defina histórias no Backlog, mova para To Do e atribua desenvolvedores.'
-              : 'Desenvolvimento: Acompanhe o fluxo diário ou ajuste status conforme o progresso.'}
-          </p>
         </div>
 
-        {/* Action Button: Add Story */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Sprint progress bar */}
+        <div className="flex items-center gap-3 min-w-[200px]">
+          <div className="flex-1">
+            <div className="flex justify-between text-[8px] font-mono text-retro-dimmed mb-1">
+              <span>Progresso da Sprint</span>
+              <span className="text-retro-green font-bold">{doneCount}/{totalStories} ({progressPct}%)</span>
+            </div>
+            <div className="w-full h-2 bg-slate-900 border border-slate-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-retro-green to-emerald-400 transition-all duration-500"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
           {onAddStory && (
-            <RetroButton
-              variant="primary"
+            <button
               onClick={() => setIsAddModalOpen(true)}
-              className="text-[9px] uppercase font-pressstart"
+              className="shrink-0 px-3 py-1.5 border-2 border-retro-accent bg-retro-accent/10 hover:bg-retro-accent/30 text-retro-accent font-pressstart text-[8px] uppercase rounded transition-all"
             >
-              ➕ Definir Backlog
-            </RetroButton>
+              + Backlog
+            </button>
           )}
         </div>
       </div>
 
-      {/* Board Grid: 5 Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 overflow-x-auto pb-4 grow items-stretch min-h-[500px]">
-        {columns.map((col) => {
-          const colStories = getStoriesByStatus(col.id);
-          const colIndex = STATUS_ORDER.indexOf(col.id);
+      {/* ── Kanban Columns ── */}
+      <div className="flex gap-3 overflow-x-auto pb-2 grow items-stretch" style={{ minHeight: '520px' }}>
+        {STATUS_ORDER.map((statusId) => {
+          const cfg = COL_CONFIG[statusId];
+          const colStories = getStoriesByStatus(statusId);
+          const colIdx = STATUS_ORDER.indexOf(statusId);
+          const isDoneCol = statusId === 'done';
 
           return (
             <div
-              key={col.id}
-              className={`flex flex-col border-2 ${col.borderColor} p-2 ${col.bgColor} min-w-[210px] rounded shadow-md`}
+              key={statusId}
+              className={`flex flex-col border-2 ${cfg.colBorder} ${cfg.colBg} rounded-md shadow-md min-w-[220px] max-w-[260px] flex-1`}
             >
               {/* Column Header */}
-              <div className="border-b-2 border-slate-800 pb-2 mb-2.5 flex items-center justify-between">
+              <div className={`${cfg.headerBg} px-3 py-2 rounded-t-sm flex items-center justify-between sticky top-0`}>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs">{col.icon}</span>
-                  <span className="font-pressstart text-[9px] text-white uppercase tracking-wider">
-                    {col.title}
+                  <span className={`w-2.5 h-2.5 rounded-full ${cfg.dotColor}`} />
+                  <span className={`font-pressstart text-[9px] ${cfg.headerText} uppercase tracking-wider`}>
+                    {cfg.label}
                   </span>
                 </div>
-                <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border border-slate-700 ${col.badgeColor}`}>
+                <span className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-full ${cfg.countBg}`}>
                   {colStories.length}
                 </span>
               </div>
 
-              {/* Cards Container */}
-              <div className="flex flex-col gap-2.5 grow overflow-y-auto max-h-[520px]">
+              {/* WIP Limit hint */}
+              {statusId === 'progress' && colStories.length > 3 && (
+                <div className="text-[7px] font-pressstart text-amber-400 bg-amber-950/60 text-center py-0.5 border-b border-amber-800 animate-pulse">
+                  ⚠️ WIP LIMIT ATINGIDO
+                </div>
+              )}
+
+              {/* Cards Area */}
+              <div className="flex flex-col gap-2.5 p-2.5 overflow-y-auto grow" style={{ maxHeight: '520px' }}>
                 {colStories.length === 0 ? (
-                  <div className="text-[9px] font-mono text-center text-slate-600 py-10 border border-dashed border-slate-800 rounded italic">
-                    Nenhum item
+                  <div className="flex flex-col items-center justify-center grow py-8 opacity-40">
+                    <span className="text-3xl mb-2">{cfg.icon}</span>
+                    <span className="text-[8px] font-mono text-slate-500 italic text-center">
+                      {statusId === 'backlog' ? 'Adicione itens\nao backlog' : 'Nenhum item\nnesta coluna'}
+                    </span>
                   </div>
                 ) : (
-                  colStories.map((story) => (
-                    <div
-                      key={story.id}
-                      className="border-2 border-retro-border bg-retro-panel p-2.5 rounded hover:border-slate-400 transition-all flex flex-col justify-between gap-2 shadow-sm"
-                    >
-                      {/* Top row: ID, Value, Complexity */}
-                      <div className="flex items-center justify-between text-[8px] font-pressstart">
-                        <span className="text-retro-accent">{story.id}</span>
-                        <div className="flex space-x-1.5 font-mono">
-                          <span className="text-retro-purple bg-purple-950/60 px-1 rounded" title="Valor de Negócio">
-                            V:{story.value}
+                  colStories.map((story) => {
+                    const memberName = getMemberName(story.assignedTo);
+                    const memberAvatar = getMemberAvatar(story.assignedTo);
+                    const isHovered = hoveredCard === story.id;
+
+                    return (
+                      <div
+                        key={story.id}
+                        className={`
+                          border-l-4 ${cfg.cardAccent} border border-r-0 border-t-0 border-b-0
+                          ${cfg.cardBorder} ${cfg.cardBg}
+                          rounded-r-md p-3 flex flex-col gap-2 transition-all duration-150 cursor-pointer
+                          ${isHovered ? 'shadow-lg scale-[1.01] brightness-110' : 'shadow-sm'}
+                          ${isDoneCol ? 'opacity-80' : ''}
+                        `}
+                        onMouseEnter={() => setHoveredCard(story.id)}
+                        onMouseLeave={() => setHoveredCard(null)}
+                      >
+                        {/* Card Top: ID badge + Points */}
+                        <div className="flex items-center justify-between">
+                          <span className={`font-mono text-[8px] px-1.5 py-0.5 rounded border ${
+                            isDoneCol
+                              ? 'text-emerald-300 border-emerald-800 bg-emerald-950/60 line-through'
+                              : 'text-retro-accent border-slate-700 bg-slate-900/60'
+                          }`}>
+                            {story.id}
                           </span>
-                          <span className="text-retro-blue bg-blue-950/60 px-1 rounded" title="Complexidade Fibonacci">
-                            C:{story.complexity}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Story Title */}
-                      <p className="text-[11px] font-sans text-white font-medium leading-snug">
-                        {story.title}
-                      </p>
-
-                      {/* Assignee / Responsible */}
-                      <div className="text-[8px] font-mono flex items-center justify-between pt-1 border-t border-slate-800/80">
-                        <span className="text-retro-dimmed">Dev:</span>
-                        <button
-                          onClick={() => setSelectedStory(story)}
-                          className={`font-semibold hover:underline px-1 py-0.5 rounded ${
-                            story.assignedTo
-                              ? 'text-retro-green bg-green-950/40 border border-green-900/60'
-                              : 'text-retro-red bg-red-950/40 border border-red-900/60 animate-pulse'
-                          }`}
-                          title="Clique para atribuir ou trocar responsável"
-                        >
-                          {getMemberName(story.assignedTo)} ✎
-                        </button>
-                      </div>
-
-                      {/* Progress Bar (if in progress or review) */}
-                      {story.status !== 'todo' && story.status !== 'backlog' && story.status !== 'done' && (
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between text-[7px] font-mono text-retro-dimmed">
-                            <span>Progresso:</span>
-                            <span>{story.progress}%</span>
-                          </div>
-                          <div className="w-full bg-slate-900 h-1.5 border border-slate-800 rounded-xs overflow-hidden">
-                            <div
-                              className={`h-full transition-all duration-300 ${
-                                story.status === 'review' ? 'bg-yellow-400' : 'bg-retro-green'
-                              }`}
-                              style={{ width: `${story.progress}%` }}
-                            />
+                          <div className="flex items-center gap-1">
+                            <span className="text-[7px] font-mono px-1 py-0.5 bg-purple-950/50 border border-purple-800/50 text-purple-300 rounded" title="Valor de Negócio">
+                              V{story.value}
+                            </span>
+                            <span className="text-[7px] font-mono px-1 py-0.5 bg-blue-950/50 border border-blue-800/50 text-blue-300 rounded" title="Story Points">
+                              {story.complexity}sp
+                            </span>
                           </div>
                         </div>
-                      )}
 
-                      {/* Status Movement Quick Buttons */}
-                      <div className="flex justify-between items-center pt-1 border-t border-slate-800 text-[8px] font-pressstart gap-1">
-                        {colIndex > 0 ? (
-                          <button
-                            onClick={() => handleMove(story, 'prev')}
-                            className="px-1.5 py-1 bg-slate-900 border border-slate-700 hover:border-retro-accent hover:text-white text-slate-400 rounded transition-all"
-                            title={`Mover para ${columns[colIndex - 1].title}`}
-                          >
-                            ◀ {columns[colIndex - 1].title.split(' ')[0]}
-                          </button>
-                        ) : <div />}
+                        {/* Card Title */}
+                        <p className={`text-[11px] font-sans leading-tight ${
+                          isDoneCol ? 'text-slate-400 line-through' : 'text-white font-medium'
+                        }`}>
+                          {story.title}
+                        </p>
 
-                        {colIndex < columns.length - 1 ? (
-                          <button
-                            onClick={() => handleMove(story, 'next')}
-                            className="px-1.5 py-1 bg-slate-900 border border-slate-700 hover:border-retro-accent hover:text-white text-slate-300 rounded transition-all ml-auto"
-                            title={`Mover para ${columns[colIndex + 1].title}`}
-                          >
-                            {columns[colIndex + 1].title.split(' ')[0]} ▶
-                          </button>
-                        ) : (
-                          <span className="text-retro-green text-[7px] ml-auto">PRONTO</span>
+                        {/* Progress Bar (In Progress or Review only) */}
+                        {(story.status === 'progress' || story.status === 'review') && story.progress > 0 && (
+                          <div>
+                            <div className="flex justify-between text-[7px] font-mono text-retro-dimmed mb-0.5">
+                              <span>Progresso</span>
+                              <span className="text-white">{story.progress}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  story.status === 'review' ? 'bg-purple-500' : 'bg-amber-400'
+                                }`}
+                                style={{ width: `${story.progress}%` }}
+                              />
+                            </div>
+                          </div>
                         )}
+
+                        {/* Done checkmark + date indicator */}
+                        {isDoneCol && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-emerald-400 text-xs">✓</span>
+                            <span className="text-[8px] font-mono text-emerald-500">Entregue</span>
+                          </div>
+                        )}
+
+                        {/* Card Bottom: Assignee + Move Buttons */}
+                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60 gap-1.5">
+                          {/* Assignee avatar */}
+                          <button
+                            onClick={() => setSelectedStory(story)}
+                            className={`flex items-center gap-1.5 text-[8px] font-sans rounded px-1.5 py-0.5 border transition-all ${
+                              story.assignedTo
+                                ? 'border-slate-700 bg-slate-800/60 text-slate-300 hover:border-slate-500'
+                                : 'border-red-800/60 bg-red-950/30 text-red-400 animate-pulse hover:border-red-600'
+                            }`}
+                            title="Clique para atribuir ou trocar"
+                          >
+                            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold ${
+                              story.assignedTo
+                                ? 'bg-retro-green text-slate-900'
+                                : 'bg-red-900 text-red-300'
+                            }`}>
+                              {story.assignedTo ? memberAvatar : '!'}
+                            </span>
+                            <span className="max-w-[70px] truncate">
+                              {memberName || 'Atribuir'}
+                            </span>
+                          </button>
+
+                          {/* Move buttons */}
+                          <div className="flex items-center gap-1">
+                            {colIdx > 0 && (
+                              <button
+                                onClick={() => handleMove(story, 'prev')}
+                                className="w-5 h-5 flex items-center justify-center border border-slate-700 bg-slate-900 hover:border-slate-500 hover:bg-slate-800 text-slate-400 hover:text-white rounded transition-all text-[8px]"
+                                title={`← ${COL_CONFIG[STATUS_ORDER[colIdx - 1]].label}`}
+                              >
+                                ◀
+                              </button>
+                            )}
+                            {colIdx < STATUS_ORDER.length - 1 && (
+                              <button
+                                onClick={() => handleMove(story, 'next')}
+                                className={`w-5 h-5 flex items-center justify-center border rounded transition-all text-[8px] font-bold ${
+                                  colIdx === STATUS_ORDER.length - 2
+                                    ? 'border-emerald-700 bg-emerald-950/50 text-emerald-400 hover:bg-emerald-900/50'
+                                    : 'border-slate-700 bg-slate-900 hover:border-retro-accent hover:bg-slate-800 text-slate-300 hover:text-white'
+                                }`}
+                                title={`→ ${COL_CONFIG[STATUS_ORDER[colIdx + 1]].label}`}
+                              >
+                                ▶
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
+
+              {/* Column Footer: total points */}
+              {colStories.length > 0 && (
+                <div className={`px-3 py-1.5 border-t ${cfg.colBorder} text-[7px] font-mono text-slate-500 flex justify-between rounded-b-sm`}>
+                  <span>{colStories.reduce((sum, s) => sum + s.complexity, 0)} SP total</span>
+                  <span>{colStories.reduce((sum, s) => sum + s.value, 0)} valor</span>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Modal: Definir Nova História no Backlog */}
+      {/* ── Modal: Definir Nova História ── */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-retro-panel border-4 border-retro-accent p-6 shadow-retro-lg max-w-md w-full space-y-4">
-            <div className="flex justify-between items-center border-b-2 border-slate-800 pb-2">
+        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-[#12121e] border-4 border-retro-accent rounded-md p-6 shadow-retro-lg max-w-md w-full space-y-4">
+            <div className="flex justify-between items-center border-b-2 border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <span className="text-xl">➕</span>
-                <h3 className="font-pressstart text-xs text-retro-accent uppercase">
-                  Definir História no Backlog
-                </h3>
+                <span className="text-xl">📝</span>
+                <h3 className="font-pressstart text-[10px] text-retro-accent uppercase">Nova User Story</h3>
               </div>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-white font-pressstart text-xs"
-              >
-                ✕
-              </button>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white font-pressstart text-[10px]">✕</button>
             </div>
 
-            {/* Title Input */}
-            <div className="space-y-1">
-              <label className="text-[9px] font-pressstart text-retro-dimmed uppercase block">
-                Título da User Story:
-              </label>
-              <input
-                type="text"
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-pressstart text-retro-dimmed uppercase block">Título da User Story:</label>
+              <textarea
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                maxLength={60}
-                placeholder="Ex: Como usuário, quero consultar comprovante Pix em PDF"
-                className="w-full bg-[#131326] border-2 border-retro-border p-2.5 text-white font-sans text-xs outline-none focus:border-retro-accent rounded"
+                maxLength={100}
+                rows={2}
+                placeholder="Como [usuário], quero [funcionalidade] para [benefício]..."
+                className="w-full bg-[#0d0d18] border-2 border-slate-700 focus:border-retro-accent p-2.5 text-white font-sans text-xs outline-none rounded resize-none transition-colors"
               />
+              <span className="text-[7px] font-mono text-slate-600">{newTitle.length}/100</span>
             </div>
 
-            {/* Value (1-10) */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-[9px] font-pressstart text-retro-purple">
-                <span>Valor de Negócio (PO):</span>
-                <span>{newValue} / 10</span>
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-[9px] font-pressstart">
+                <span className="text-retro-purple">Valor de Negócio (PO):</span>
+                <span className="text-white">{newValue}/10</span>
               </div>
               <input
-                type="range"
-                min={1}
-                max={10}
-                value={newValue}
+                type="range" min={1} max={10} value={newValue}
                 onChange={(e) => setNewValue(Number(e.target.value))}
                 className="w-full accent-purple-500 cursor-pointer"
               />
+              <div className="flex justify-between text-[7px] font-mono text-slate-600">
+                <span>Baixo</span><span>Médio</span><span>Alto</span>
+              </div>
             </div>
 
-            {/* Complexity (Fibonacci 1, 2, 3, 5, 8) */}
-            <div className="space-y-1">
-              <label className="text-[9px] font-pressstart text-retro-blue uppercase block">
-                Complexidade (Story Points - Planning Poker):
-              </label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 5, 8].map((pts) => (
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-pressstart text-retro-blue uppercase block">Story Points (Planning Poker):</label>
+              <div className="grid grid-cols-5 gap-2">
+                {FIBONACCI.map((pts) => (
                   <button
-                    key={pts}
-                    type="button"
+                    key={pts} type="button"
                     onClick={() => setNewComplexity(pts)}
-                    className={`flex-1 py-2 border-2 rounded font-pressstart text-[10px] transition-all ${
+                    className={`py-2 border-2 rounded font-pressstart text-[11px] transition-all ${
                       newComplexity === pts
-                        ? 'border-retro-blue bg-blue-950 text-white shadow-md'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-600'
+                        ? 'border-retro-blue bg-blue-900 text-white shadow-md'
+                        : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-500'
                     }`}
                   >
                     {pts}
                   </button>
                 ))}
               </div>
+              <p className="text-[7px] font-mono text-slate-600">Sequência Fibonacci: 1 (trivial) → 8 (complexo)</p>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
-              <RetroButton variant="secondary" onClick={() => setIsAddModalOpen(false)}>
-                Cancelar
-              </RetroButton>
-              <RetroButton variant="success" onClick={handleCreateStory}>
-                Salvar no Backlog
-              </RetroButton>
+            <div className="flex justify-end gap-3 pt-2 border-t border-slate-800">
+              <RetroButton variant="secondary" onClick={() => setIsAddModalOpen(false)}>Cancelar</RetroButton>
+              <RetroButton variant="success" onClick={handleCreateStory}>Adicionar ao Backlog</RetroButton>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Atribuir Desenvolvedor */}
+      {/* ── Modal: Atribuir Desenvolvedor ── */}
       {selectedStory && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-retro-panel border-4 border-retro-border p-6 shadow-retro-lg max-w-sm w-full">
-            <h3 className="font-pressstart text-[10px] text-retro-accent mb-2 uppercase">
-              Atribuir Desenvolvedor
-            </h3>
+        <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-[#12121e] border-4 border-retro-border rounded-md p-6 shadow-retro-lg max-w-sm w-full">
+            <h3 className="font-pressstart text-[10px] text-retro-accent mb-3 uppercase">Atribuir Desenvolvedor</h3>
 
-            <div className="border border-retro-border bg-[#131326] p-3 mb-4 text-[10px] rounded">
-              <span className="font-pressstart text-[8px] text-retro-dimmed">{selectedStory.id}</span>
-              <p className="font-sans text-white text-sm font-semibold mt-1 leading-snug">
-                {selectedStory.title}
-              </p>
-              <div className="flex space-x-4 mt-2 font-mono text-[9px]">
+            <div className="bg-[#0d0d18] border border-slate-700 p-3 mb-4 rounded-md">
+              <span className="font-pressstart text-[7px] text-retro-dimmed block">{selectedStory.id}</span>
+              <p className="font-sans text-white text-sm font-semibold mt-1 leading-snug">{selectedStory.title}</p>
+              <div className="flex gap-3 mt-2 font-mono text-[8px]">
                 <span>Valor: <strong className="text-retro-purple">{selectedStory.value}</strong></span>
-                <span>Complexidade: <strong className="text-retro-blue">{selectedStory.complexity} pts</strong></span>
+                <span>Pontos: <strong className="text-retro-blue">{selectedStory.complexity} SP</strong></span>
               </div>
             </div>
 
             <p className="text-[9px] text-retro-dimmed font-pressstart mb-3">Selecione o responsável:</p>
-            <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto mb-4">
+            <div className="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto mb-4 pr-1">
               {Object.keys(CHARACTERS_DATA).map((key) => {
                 const char = CHARACTERS_DATA[key];
                 const stats = team[key];
                 if (!stats) return null;
+                const isAssigned = selectedStory.assignedTo === key;
 
                 return (
                   <button
                     key={key}
-                    onClick={() => {
-                      if (onAssignStory) {
-                        onAssignStory(selectedStory.id, key);
-                      }
-                      setSelectedStory(null);
-                    }}
-                    className="flex justify-between items-center text-left border-2 border-retro-border p-2 bg-[#131326] hover:border-retro-accent transition-colors text-[10px] rounded"
+                    onClick={() => { if (onAssignStory) onAssignStory(selectedStory.id, key); setSelectedStory(null); }}
+                    className={`flex justify-between items-center text-left border-2 p-2.5 rounded transition-all ${
+                      isAssigned
+                        ? 'border-retro-green bg-green-950/40 text-white'
+                        : 'border-slate-700 bg-[#0d0d18] hover:border-retro-accent text-slate-200'
+                    }`}
                   >
-                    <div>
-                      <span className="font-pressstart text-[9px] block text-white">{char.name}</span>
-                      <span className="text-[8px] text-retro-dimmed font-mono">{char.role}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center font-pressstart text-[9px] text-white">
+                        {char.name.charAt(0)}
+                      </span>
+                      <div>
+                        <span className="font-pressstart text-[9px] block">{char.name}</span>
+                        <span className="text-[7px] text-retro-dimmed font-mono">{char.role}</span>
+                      </div>
                     </div>
-                    <div className="text-right font-mono text-[8px] text-retro-dimmed">
-                      Motiv.: <strong className="text-retro-green">{stats.motivation}%</strong><br />
-                      Estresse: <strong className={stats.stress > 60 ? 'text-retro-red' : 'text-slate-300'}>{stats.stress}%</strong>
+                    <div className="text-right font-mono text-[8px]">
+                      <span className="text-retro-green block">Motiv: {stats.motivation}%</span>
+                      <span className={stats.stress > 60 ? 'text-retro-red' : 'text-slate-300'}>
+                        Stress: {stats.stress}%
+                      </span>
                     </div>
                   </button>
                 );
               })}
 
               <button
-                onClick={() => {
-                  if (onAssignStory) {
-                    onAssignStory(selectedStory.id, null);
-                  }
-                  setSelectedStory(null);
-                }}
-                className="text-center border-2 border-dashed border-retro-border p-2 bg-[#0c0c14] hover:border-retro-red text-retro-red text-[9px] font-pressstart uppercase mt-1 rounded"
+                onClick={() => { if (onAssignStory) onAssignStory(selectedStory.id, null); setSelectedStory(null); }}
+                className="border-2 border-dashed border-red-800 p-2 hover:border-retro-red text-retro-red text-[9px] font-pressstart uppercase mt-1 rounded text-center"
               >
-                Remover Atribuição
+                ✕ Remover Atribuição
               </button>
             </div>
 
             <div className="flex justify-end pt-2 border-t border-slate-800">
-              <RetroButton variant="danger" onClick={() => setSelectedStory(null)}>
-                Cancelar
-              </RetroButton>
+              <RetroButton variant="danger" onClick={() => setSelectedStory(null)}>Fechar</RetroButton>
             </div>
           </div>
         </div>
