@@ -7,12 +7,19 @@
 
 ## 1. IMPLEMENTADO
 
+### Rodapé Retro & Contador de Visitas Dinâmico
+- [x] **Contador de Visitas Funcional**:
+  - Incremento garantido a cada visualização/recarregamento da página (F5)
+  - Persistência permanente em `localStorage` (o número nunca reinicia e sempre sobe)
+  - Efeito visual de destaque em verde no badge quando atualizado
+- [x] **Versão do Jogo**: Exibição da versão ativa (`v1.2.0`) com badge retrô e luz verde pulsante
+
 ### Avatares Bonitos em Pixel Art & Expressões Faciais Dinâmicas
 - [x] **Refatoração Completa do PixelCharacter**:
   - Traços detalhados em pixel art SVG nítido (*crispEdges*) com estética retrô / chibi / anime
   - Bochechas rosadas (*blush*) com intensidades reativas ao humor
   - Penteados, cabelos e acessórios exclusivos para os 8 personagens (Ana, Carlos, Júlia, Marcos, Beatriz, Rafael, Roberto e Mariana)
-  - Uniformes e cores temáticas adaptadas ao setor da empresa ativa (ex: azul médico na HealthPulse, dark cyber na CyberShield, terno bancário na SafeVault, etc.)
+  - Uniformes e cores temáticas adaptadas ao setor da empresa ativa
 - [x] **7 Expressões Emocionais Dinâmicas**:
   - `neutral`: Olhar focado, sereno e profissional
   - `happy`: Olhinhos sorridentes `^ ^`, boca aberta e bochechas coradas
@@ -22,13 +29,9 @@
   - `surprised`: Olhões arregalados com reflexo de luz e boca em "O"
   - `confident`: Piscadinha esperta (*wink*), sorriso de canto e estrela dourada cintilante
 - [x] **Normalização Inteligente de Personagens**:
-  - Suporte a qualquer variação de grafia/acentuação (`'Ana'`, `'carlos'`, `'Júlia'`, `'Julia'`, etc.) evitando cair no fallback genérico
+  - Suporte a qualquer variação de grafia/acentuação (`'Ana'`, `'carlos'`, `'Júlia'`, `'Julia'`, etc.)
   - Quando o Scrum Master fala nas histórias de qualquer empresa, é exibido o avatar do personagem escolhido pelo jogador (**Roberto** ou **Mariana**) com a expressão facial correta
 - [x] **Identidade Visual nas Caixas de Diálogo**: Cores temáticas e cargos corretos em todas as 11 empresas
-
-### Rodapé Retro & Telemetria
-- [x] **Versão do Jogo**: Exibição da versão ativa (`v1.2.0`) com badge retrô e luz verde pulsante
-- [x] **Contador de Visitas**: Contador resiliente integrado via API pública (`counterapi.dev`) com fallback automático em `localStorage` e persistência por sessão
 
 ### Quadro Kanban (Totalmente Refatorado no Estilo Kanban Real)
 - [x] 5 colunas clássicas: Backlog, To Do, In Progress (com WIP Limit), Review / QA e Done (com strikethrough e selo Entregue)
@@ -57,6 +60,7 @@
 
 | Data | Correção | Status |
 |---|---|---|
+| 2026-09-03 | Contador de visitas agora incrementa a cada recarregamento da página (F5) | CONCLUÍDO |
 | 2026-09-03 | Avatares pixel art bonitos com 7 expressões dinâmicas e uniformes por empresa | CONCLUÍDO |
 | 2026-09-03 | Contador de visitas e versão v1.2.0 adicionados no rodapé (Footer.tsx) | CONCLUÍDO |
 | 2026-09-03 | Quadro Kanban reestilizado (WIP limits, cards com accent border, barra de sprint) | CONCLUÍDO |

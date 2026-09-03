@@ -3,44 +3,33 @@ import React, { useEffect, useState } from 'react';
 export const GAME_VERSION = 'v1.2.0';
 
 export const Footer: React.FC = () => {
-  const [visitCount, setVisitCount] = useState<number | null>(null);
+  const [visitCount, setVisitCount] = useState<number>(144);
+  const [justUpdated, setJustUpdated] = useState(false);
 
   useEffect(() => {
-    // 1. Contador local resiliente
-    const LOCAL_KEY = 'scrum_master_visit_count_v1';
-    let currentLocal = parseInt(localStorage.getItem(LOCAL_KEY) || '142', 10);
-    
-    // Incrementa na primeira visualização da sessão
-    const sessionKey = 'scrum_master_session_visited';
-    if (!sessionStorage.getItem(sessionKey)) {
-      currentLocal += 1;
-      localStorage.setItem(LOCAL_KEY, currentLocal.toString());
-      sessionStorage.setItem(sessionKey, 'true');
+    // Chave única de armazenamento local
+    const STORAGE_KEY = 'scrum_master_page_views_count';
+    const BASE_COUNT = 143;
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      let current = stored ? parseInt(stored, 10) : BASE_COUNT;
+      if (isNaN(current) || current < BASE_COUNT) {
+        current = BASE_COUNT;
+      }
+
+      // Incrementa a cada visita / recarregamento da página (F5)
+      const nextCount = current + 1;
+      localStorage.setItem(STORAGE_KEY, nextCount.toString());
+      setVisitCount(nextCount);
+      setJustUpdated(true);
+
+      const timer = setTimeout(() => setJustUpdated(false), 2000);
+      return () => clearTimeout(timer);
+    } catch {
+      // Fallback em caso de bloqueio estrito de cookies/armazenamento
+      setVisitCount(144);
     }
-    setVisitCount(currentLocal);
-
-    // 2. Tenta sincronizar com contador público online
-    const controller = new AbortController();
-    fetch('https://api.counterapi.dev/v1/scrum-brasil-the-scrum-master/visits/up', {
-      signal: controller.signal,
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Counter API offline');
-        return res.json();
-      })
-      .then((data) => {
-        if (data && typeof data.count === 'number') {
-          // Normaliza para incluir o offset inicial
-          const combined = Math.max(data.count, currentLocal);
-          setVisitCount(combined);
-          localStorage.setItem(LOCAL_KEY, combined.toString());
-        }
-      })
-      .catch(() => {
-        // Silenciosamente usa o fallback local em caso de falha de rede/CORS
-      });
-
-    return () => controller.abort();
   }, []);
 
   return (
@@ -56,8 +45,15 @@ export const Footer: React.FC = () => {
 
         <span className="flex items-center gap-1 text-slate-400">
           <span>👥 Visitas:</span>
-          <strong className="font-pressstart text-[7px] text-white bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">
-            {visitCount !== null ? visitCount.toLocaleString('pt-BR') : '...'}
+          <strong
+            className={`font-pressstart text-[7px] px-1.5 py-0.5 rounded border transition-all duration-500 ${
+              justUpdated
+                ? 'text-retro-green border-retro-green bg-green-950/60 scale-105 shadow-sm'
+                : 'text-white border-slate-800 bg-slate-900'
+            }`}
+            title="Total de visualizações e visitas nesta sessão"
+          >
+            {visitCount.toLocaleString('pt-BR')}
           </strong>
         </span>
       </div>
