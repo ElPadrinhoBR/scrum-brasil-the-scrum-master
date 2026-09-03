@@ -1,0 +1,31 @@
+﻿# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Ambientes locais e chaves
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs locais e notas de desenvolvimento
+*.log
+*.log.md
+AI_AGENT_LOG.md
+AGENT_LOG.md
+*agent_log*.md
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# IDE e ferramentas
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
